@@ -10,7 +10,6 @@ export default function SignInPage() {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const POLL_ID = "123"; //TODO: DA CAMBIARE
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,7 +27,7 @@ export default function SignInPage() {
       setError(true);
       setLoading(false);
     } else {
-      router.push(`/polls/${POLL_ID}`);
+      router.push(`/polls`);
     }
   }
 

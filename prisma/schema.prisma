@@ -15,10 +15,8 @@ datasource db {
 // One row per monthly election, e.g. "Best Film – March 2026"
 model Poll {
   id          String    @id @default(cuid())
-  title       String                          // "Best Film – March 2026"
-  description String?
-  month       String                          // "2026-03" — unique index prevents duplicates
-  status      PollStatus @default(DRAFT)      // DRAFT | OPEN | CLOSED
+  month       String
+  status      PollStatus @default(DRAFT)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 

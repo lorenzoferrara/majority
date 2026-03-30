@@ -25,23 +25,44 @@ export default async function VotingPage({
     },
   });
 
-  if (!poll) return <div>Poll not found.</div>;
-  if (poll.status === "DRAFT") return <div>Poll not open yet.</div>;
+  if (!poll) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-orange-200">
+        <p className="text-xl">Poll not found.</p>
+      </div>
+    );
+  }
+
+  if (poll.status === "DRAFT") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-orange-200">
+        <p className="text-xl">Poll not open yet.</p>
+      </div>
+    );
+  }
 
   const existing = poll.ballots[0]?.choices.map((c) => c.optionId);
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="text-3xl font-bold">{poll.title}</h1>
+    <main className="min-h-screen bg-black p-8">
+      <h1 className="text-4xl font-bold text-orange-400 mb-8 text-center">
+        🏆 {poll.title}
+      </h1>
+
       {poll.status === "CLOSED" ? (
-        <div className="mt-8 text-center">
-          Voting is closed.{" "}
-          <a href={`/results/${poll.id}`} className="text-indigo-600 underline">
-            See results →
-          </a>
+        <div className="flex justify-center">
+          <div className="bg-gradient-to-br from-orange-500/20 to-orange-300/10 border border-orange-400 rounded-xl p-6 text-center">
+            <p className="text-orange-200 mb-3">Voting is closed.</p>
+            <a
+              href={`/results/${poll.id}`}
+              className="text-orange-400 underline font-medium"
+            >
+              See results →
+            </a>
+          </div>
         </div>
       ) : (
-        <div className="mt-8">
+        <div className="grid grid-cols-1 gap-6">
           <RankingBoard
             pollId={poll.id}
             options={poll.options}
