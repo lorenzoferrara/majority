@@ -1,0 +1,87 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Neon serverless requires connection pooling via PgBouncer
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Poll ───────────────────────────────────────────────────────────────────
+// One row per monthly election, e.g. "Best Film – March 2026"
+model Poll {
+  id          String    @id @default(cuid())
+  title       String                          // "Best Film – March 2026"
+  description String?
+  month       String                          // "2026-03" — unique index prevents duplicates
+  status      PollStatus @default(DRAFT)      // DRAFT | OPEN | CLOSED
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  options  Option[]
+  ballots  Ballot[]
+
+  @@unique([month])
+  @@index([status])
+}
+
+enum PollStatus {
+  DRAFT
+  OPEN
+  CLOSED
+}
+
+// ─── Option ─────────────────────────────────────────────────────────────────
+// A candidate inside a poll.
+model Option {
+  id          String   @id @default(cuid())
+  pollId      String
+  label       String                          // "Oppenheimer"
+  description String?
+  imageUrl    String?
+  order       Int      @default(0)            // display order (admin-controlled)
+  createdAt   DateTime @default(now())
+
+  poll      Poll           @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  rankings  RankedChoice[]
+
+  @@index([pollId])
+}
+
+// ─── Ballot ─────────────────────────────────────────────────────────────────
+// One ballot per (userId, pollId). Enforces the "one vote per user" rule at the
+// DB level via the unique constraint — auth alone is not sufficient.
+model Ballot {
+  id        String   @id @default(cuid())
+  pollId    String
+  userId    String                            // Clerk user ID
+  submittedAt DateTime @default(now())
+
+  poll     Poll           @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  choices  RankedChoice[]
+
+  @@unique([pollId, userId])                 // ← THE key constraint
+  @@index([pollId])
+}
+
+// ─── RankedChoice ───────────────────────────────────────────────────────────
+// Each row is one preference: ballot → option at a given rank position.
+// rank 1 = first choice, rank 2 = second choice, etc.
+model RankedChoice {
+  id       String @id @default(cuid())
+  ballotId String
+  optionId String
+  rank     Int                               // 1-based
+
+  ballot Ballot @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+  option Option @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([ballotId, rank])                // each rank slot is unique per ballot
+  @@unique([ballotId, optionId])            // each option appears once per ballot
+  @@index([ballotId])
+  @@index([optionId])
+}
