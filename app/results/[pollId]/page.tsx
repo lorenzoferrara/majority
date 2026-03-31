@@ -39,7 +39,7 @@ export default async function ResultsPage({
         {result.winner && (
           <div className="mb-12 border-2 border-gold-500 bg-cream-50 p-10 text-center">
             <div className="text-5xl mb-4">🏆</div>
-            <p className="text-xs tracking-[0.3em] uppercase text-gold-600 font-medium mb-2">And the winner is</p>
+            <p className="text-xs tracking-[0.3em] uppercase text-gold-600 font-medium mb-2">This Month We Read</p>
             <p className="font-display text-3xl font-bold text-ink-900">{optionLabel(result.winner)}</p>
           </div>
         )}

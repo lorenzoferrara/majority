@@ -15,7 +15,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Oscar Voting",
+  title: "Book Club",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

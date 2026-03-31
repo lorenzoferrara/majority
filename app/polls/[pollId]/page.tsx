@@ -52,7 +52,7 @@ export default async function VotingPage({
           <h1 className="font-display text-4xl md:text-5xl font-bold text-ink-900">{poll.title}</h1>
           <div className="mt-4 flex items-center justify-center gap-3">
             <div className="h-px w-10 bg-gold-400" />
-            <span className="text-xs text-ink-200">Drag to rank · Submit when ready</span>
+            <span className="text-xs text-ink-200">Drag books to rank them · Submit when ready</span>
             <div className="h-px w-10 bg-gold-400" />
           </div>
         </header>

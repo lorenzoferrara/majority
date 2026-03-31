@@ -20,11 +20,11 @@ export default async function PollsPage() {
       <div className="max-w-2xl mx-auto">
 
         <header className="mb-12 text-center">
-          <p className="text-xs tracking-[0.3em] uppercase text-gold-600 font-medium mb-3">Select a Category</p>
-          <h1 className="font-display text-5xl font-bold text-ink-900">Current Polls</h1>
+          <p className="text-xs tracking-[0.3em] uppercase text-gold-600 font-medium mb-3">Book Club</p>
+          <h1 className="font-display text-5xl font-bold text-ink-900">Monthly Votes</h1>
           <div className="mt-5 flex items-center justify-center gap-3">
             <div className="h-px w-12 bg-gold-400" />
-            <span className="text-xs text-ink-200">Vote · Rank · Decide</span>
+            <span className="text-xs text-ink-200">Read · Rank · Decide</span>
             <div className="h-px w-12 bg-gold-400" />
           </div>
         </header>

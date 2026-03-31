@@ -42,10 +42,10 @@ export default function SignInPage() {
         {/* Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full border-2 border-gold-500 mb-5 text-2xl">
-            🏆
+            📚
           </div>
           <h1 className="font-display text-3xl font-bold text-ink-900 mb-2">Welcome</h1>
-          <p className="text-ink-300 text-sm">Enter your name and the event passphrase</p>
+          <p className="text-ink-300 text-sm">Enter your name and the club passphrase</p>
         </div>
 
         {/* Form */}
@@ -86,7 +86,7 @@ export default function SignInPage() {
             disabled={loading}
             className="mt-2 py-3.5 bg-ink-900 text-cream-100 text-sm font-medium tracking-wide hover:bg-ink-800 transition-colors duration-200 disabled:opacity-50"
           >
-            {loading ? "Verifying…" : "Enter the Ballot Room →"}
+            {loading ? "Verifying…" : "Cast Your Vote →"}
           </button>
         </form>
 

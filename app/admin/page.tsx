@@ -57,7 +57,7 @@ export default function AdminPage() {
 
         <header className="mb-10 text-center">
           <p className="text-xs tracking-[0.3em] uppercase text-gold-600 font-medium mb-3">Administration</p>
-          <h1 className="font-display text-4xl font-bold text-ink-900">Create Poll</h1>
+          <h1 className="font-display text-4xl font-bold text-ink-900">New Monthly Vote</h1>
         </header>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -87,13 +87,13 @@ export default function AdminPage() {
           </div>
 
           <div>
-            <label className={labelClass}>Candidates</label>
+            <label className={labelClass}>Books</label>
             <div className="flex flex-col gap-2">
               {options.map((opt, index) => (
                 <div key={index} className="flex gap-2">
                   <input
                     type="text"
-                    placeholder={`Candidate #${index + 1}`}
+                    placeholder={`Book title #${index + 1}`}
                     value={opt}
                     onChange={(e) => handleOptionChange(index, e.target.value)}
                     className={`${inputClass} flex-1`}
