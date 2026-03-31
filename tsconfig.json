@@ -16,6 +16,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
+    "types": ["vite/client"],
     // ────── AGGIUNTA PER GLI ALIAS ──────
     "baseUrl": ".",
     "paths": {

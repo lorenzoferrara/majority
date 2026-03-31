@@ -9,4 +9,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "."),
     },
   },
+  server: {
+    proxy: {
+      "/api": "http://localhost:3001",
+    },
+  },  // proxy only active when running npm run dev:api alongside
 });
