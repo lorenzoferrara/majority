@@ -1,0 +1,23 @@
+{
+  "name": "Majority — Book Club",
+  "short_name": "Majority",
+  "description": "Ranked-choice voting for your book club",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F0EC",
+  "theme_color": "#C4A46A",
+  "icons": [
+    {
+      "src": "/icons/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
