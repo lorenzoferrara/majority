@@ -8,18 +8,43 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        cream: {
-          50:  "#fefdfb",
-          100: "#faf8f3",
-          200: "#f2ebdd",
-          300: "#e5d9c3",
+        graphite: {
+          950: "#0d0c09",
+          900: "#141210",
+          800: "#1c1a14",
+          700: "#26231a",
+          600: "#322e22",
+          500: "#46402f",
+          400: "#6b6250",
+          300: "#8f8472",
+          200: "#b5a992",
+          100: "#d9cdb5",
+        },
+        parchment: {
+          100: "#f5f0e4",
+          200: "#e8dfc8",
+          300: "#d4c9aa",
+          400: "#b8a98a",
         },
         gold: {
+          50:  "#fdf6e0",
           300: "#f0d47a",
           400: "#dbb947",
           500: "#c49a1f",
           600: "#9c7a18",
           700: "#7a5c0f",
+        },
+        warm: {
+          bg:      "#FFECD6",
+          surface: "#FAE2CC",
+          white:   "#F2F4F3",
+        },
+        // legacy — kept for backward compat
+        cream: {
+          50:  "#fefdfb",
+          100: "#faf8f3",
+          200: "#f2ebdd",
+          300: "#e5d9c3",
         },
         ink: {
           900: "#1a140a",

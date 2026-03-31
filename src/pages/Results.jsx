@@ -17,16 +17,16 @@ export default function Results() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-cream-100">
-        <p className="font-display text-xl text-ink-300 animate-pulse">Loading results…</p>
+      <div className="min-h-screen flex items-center justify-center bg-graphite-950">
+        <p className="font-display text-2xl italic text-graphite-600">Loading…</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-cream-100">
-        <p className="font-display text-xl text-red-500">{error}</p>
+      <div className="min-h-screen flex items-center justify-center bg-graphite-950">
+        <p className="font-display text-xl italic text-graphite-500">{error}</p>
       </div>
     );
   }
@@ -34,50 +34,46 @@ export default function Results() {
   const { poll, options, totalBallots, winner, isTie, firstChoiceCounts, rounds } = data;
 
   return (
-    <main className="min-h-screen bg-cream-100 px-6 py-16">
-      <div className="max-w-2xl mx-auto">
+    <main className="min-h-screen bg-graphite-950 px-8 py-20">
+      <div className="max-w-xl mx-auto">
 
         {/* Header */}
-        <header className="mb-12 text-center">
-          <p className="text-xs tracking-[0.3em] uppercase text-gold-600 font-medium mb-3">Book Club</p>
-          <h1 className="font-display text-5xl font-bold text-ink-900">{poll.month}</h1>
-          <div className="mt-5 flex items-center justify-center gap-3">
-            <div className="h-px w-12 bg-gold-400" />
-            <span className="text-xs text-ink-200">Results</span>
-            <div className="h-px w-12 bg-gold-400" />
-          </div>
+        <header className="mb-16">
+          <p className="text-[9px] tracking-[0.5em] uppercase text-gold-600 font-medium mb-5">Book Club</p>
+          <h1 className="font-display text-6xl font-semibold text-parchment-100 leading-none">{poll.month}</h1>
+          <p className="text-[9px] tracking-[0.4em] uppercase text-graphite-500 mt-4">Results</p>
         </header>
 
-        {/* Winner banner */}
+        {/* Winner */}
         {poll.status === "CLOSED" && (
-          <div className="mb-10 border border-gold-400 bg-gold-50 px-8 py-6 text-center">
+          <div className="mb-14 border-l-2 border-gold-600 pl-6">
             {winner ? (
               <>
-                <p className="text-xs tracking-[0.3em] uppercase text-gold-600 font-medium mb-2">Winner</p>
-                <p className="font-display text-3xl font-bold text-ink-900">{winner.label}</p>
+                <p className="text-[9px] tracking-[0.4em] uppercase text-gold-600 font-medium mb-2">Winner</p>
+                <p className="font-display text-3xl font-semibold text-parchment-100">{winner.label}</p>
               </>
             ) : isTie ? (
-              <p className="font-display text-2xl font-bold text-ink-900">It's a tie!</p>
+              <p className="font-display text-2xl italic text-parchment-300">It's a tie.</p>
             ) : (
-              <p className="font-display text-xl text-ink-400">No winner determined</p>
+              <p className="font-display text-xl italic text-graphite-500">No winner determined.</p>
             )}
           </div>
         )}
 
         {poll.status !== "CLOSED" && (
-          <div className="mb-10 px-4 py-3 border border-cream-300 bg-cream-50 text-ink-300 text-sm text-center">
-            Results are not published until voting closes.
+          <div className="mb-12 py-5 border-t border-graphite-800">
+            <p className="text-sm text-graphite-500 font-light italic">Results are published once voting closes.</p>
           </div>
         )}
 
-        {/* Summary */}
-        <div className="mb-8 flex items-center justify-between text-xs text-ink-200 uppercase tracking-widest">
+        {/* Vote summary */}
+        <div className="flex items-center justify-between text-[9px] tracking-[0.3em] uppercase text-graphite-600 mb-6">
           <span>First-choice votes</span>
           <span>{totalBallots} ballot{totalBallots !== 1 ? "s" : ""}</span>
         </div>
 
-        {/* First-choice bars */}
-        <div className="flex flex-col divide-y divide-cream-200 mb-12">
+        {/* Bars */}
+        <div className="flex flex-col mb-14">
           {options
             .slice()
             .sort((a, b) => (firstChoiceCounts[b.id] || 0) - (firstChoiceCounts[a.id] || 0))
@@ -86,17 +82,16 @@ export default function Results() {
               const pct = totalBallots > 0 ? Math.round((count / totalBallots) * 100) : 0;
               const isWinner = winner?.id === option.id;
               return (
-                <div key={option.id} className="py-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`font-display text-base font-semibold ${isWinner ? "text-gold-700" : "text-ink-800"}`}>
+                <div key={option.id} className="py-5 border-b border-graphite-800">
+                  <div className="flex items-baseline justify-between mb-3">
+                    <span className={`font-display text-base ${isWinner ? "text-parchment-100" : "text-parchment-300"}`}>
                       {option.label}
-                      {isWinner && <span className="ml-2 text-xs text-gold-500 font-medium tracking-widest uppercase">Winner</span>}
                     </span>
-                    <span className="text-ink-300 text-sm tabular-nums">{count} ({pct}%)</span>
+                    <span className="text-graphite-500 text-xs tabular-nums ml-4 shrink-0">{count} ({pct}%)</span>
                   </div>
-                  <div className="h-1.5 bg-cream-200 w-full">
+                  <div className="h-px bg-graphite-800 w-full">
                     <div
-                      className={`h-1.5 transition-all duration-700 ${isWinner ? "bg-gold-500" : "bg-ink-300"}`}
+                      className={`h-px transition-all duration-700 ${isWinner ? "bg-gold-500" : "bg-graphite-600"}`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -107,27 +102,29 @@ export default function Results() {
 
         {/* IRV rounds */}
         {rounds.length > 1 && (
-          <details className="mb-10 border border-cream-300">
-            <summary className="px-5 py-3 cursor-pointer text-xs uppercase tracking-widest text-ink-300 hover:text-ink-700 transition-colors select-none">
-              Round-by-round breakdown ({rounds.length} rounds)
+          <details className="mb-12 group">
+            <summary className="cursor-pointer text-[9px] tracking-[0.4em] uppercase text-graphite-600 hover:text-graphite-400 transition-colors select-none list-none flex items-center gap-3">
+              <span className="group-open:hidden">+</span>
+              <span className="hidden group-open:inline">−</span>
+              Round-by-round ({rounds.length} rounds)
             </summary>
-            <div className="divide-y divide-cream-200 px-5">
+            <div className="mt-6 flex flex-col border-t border-graphite-800">
               {rounds.map((r) => (
-                <div key={r.round} className="py-4">
-                  <p className="text-xs uppercase tracking-widest text-ink-200 mb-2">Round {r.round}</p>
+                <div key={r.round} className="py-5 border-b border-graphite-800">
+                  <p className="text-[9px] tracking-[0.4em] uppercase text-graphite-600 mb-3">Round {r.round}</p>
                   {Object.entries(r.counts)
                     .sort(([, a], [, b]) => b - a)
                     .map(([id, count]) => {
                       const opt = options.find((o) => o.id === id);
                       return (
-                        <div key={id} className="flex justify-between text-sm py-0.5">
-                          <span className="text-ink-700">{opt?.label ?? id}</span>
-                          <span className="text-ink-300 tabular-nums">{count}</span>
+                        <div key={id} className="flex justify-between text-sm py-1">
+                          <span className="text-parchment-300 font-light">{opt?.label ?? id}</span>
+                          <span className="text-graphite-500 tabular-nums">{count}</span>
                         </div>
                       );
                     })}
                   {r.eliminated.length > 0 && (
-                    <p className="text-xs text-red-500 mt-2">
+                    <p className="text-[10px] text-graphite-600 mt-3 italic">
                       Eliminated: {r.eliminated.map((o) => o.label).join(", ")}
                     </p>
                   )}
@@ -137,12 +134,12 @@ export default function Results() {
           </details>
         )}
 
-        {/* Back */}
-        <div className="flex items-center gap-6 text-xs">
-          <Link to={`/polls/${pollId}`} className="text-ink-200 hover:text-gold-500 transition-colors">
-            ← Back to ballot
+        {/* Navigation */}
+        <div className="flex items-center gap-8 text-[9px] tracking-[0.35em] uppercase">
+          <Link to={`/polls/${pollId}`} className="text-graphite-600 hover:text-graphite-400 transition-colors">
+            ← Ballot
           </Link>
-          <Link to="/polls" className="text-ink-200 hover:text-gold-500 transition-colors">
+          <Link to="/polls" className="text-graphite-600 hover:text-graphite-400 transition-colors">
             All polls
           </Link>
         </div>

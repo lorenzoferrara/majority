@@ -34,7 +34,7 @@ export default function AdminPage() {
     });
 
     if (res.ok) {
-      setMessage("Poll created successfully.");
+      setMessage("Poll created.");
       setMonth("");
       setStatus("DRAFT");
       setOptions([""]);
@@ -46,19 +46,19 @@ export default function AdminPage() {
     setLoading(false);
   }
 
-  const inputClass = "w-full px-4 py-2.5 text-sm bg-cream-50 border border-cream-300 text-ink-900 placeholder-ink-100 focus:outline-none focus:border-gold-500 transition-colors";
-  const labelClass = "block text-xs font-medium tracking-widest uppercase text-ink-300 mb-1.5";
+  const inputClass = "w-full bg-transparent border-b border-graphite-700 pb-2.5 text-sm text-parchment-100 placeholder-graphite-600 focus:outline-none focus:border-gold-600 transition-colors duration-200";
+  const labelClass = "block text-[9px] tracking-[0.4em] uppercase text-graphite-400 mb-3";
 
   return (
-    <main className="min-h-screen bg-cream-100 px-6 py-16">
-      <div className="max-w-md mx-auto">
+    <main className="min-h-screen bg-graphite-950 px-8 py-20">
+      <div className="max-w-xs mx-auto">
 
-        <header className="mb-10 text-center">
-          <p className="text-xs tracking-[0.3em] uppercase text-gold-600 font-medium mb-3">Administration</p>
-          <h1 className="font-display text-4xl font-bold text-ink-900">New Monthly Vote</h1>
+        <header className="mb-14">
+          <p className="text-[9px] tracking-[0.5em] uppercase text-gold-600 font-medium mb-5">Administration</p>
+          <h1 className="font-display text-5xl font-semibold text-parchment-100 leading-none">New Poll</h1>
         </header>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-9">
 
           <div>
             <label className={labelClass}>Month</label>
@@ -76,22 +76,22 @@ export default function AdminPage() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className={inputClass}
+              className={`${inputClass} appearance-none cursor-pointer`}
             >
-              <option value="DRAFT">DRAFT</option>
-              <option value="OPEN">OPEN</option>
-              <option value="CLOSED">CLOSED</option>
+              <option value="DRAFT" className="bg-graphite-900 text-parchment-200">DRAFT</option>
+              <option value="OPEN" className="bg-graphite-900 text-parchment-200">OPEN</option>
+              <option value="CLOSED" className="bg-graphite-900 text-parchment-200">CLOSED</option>
             </select>
           </div>
 
           <div>
             <label className={labelClass}>Books</label>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-5">
               {options.map((opt, index) => (
-                <div key={index} className="flex gap-2">
+                <div key={index} className="flex items-end gap-3">
                   <input
                     type="text"
-                    placeholder={`Book title #${index + 1}`}
+                    placeholder={`Book ${index + 1}`}
                     value={opt}
                     onChange={(e) => handleOptionChange(index, e.target.value)}
                     className={`${inputClass} flex-1`}
@@ -101,7 +101,7 @@ export default function AdminPage() {
                     <button
                       type="button"
                       onClick={() => removeOption(index)}
-                      className="px-3 border border-cream-300 text-ink-300 hover:border-red-300 hover:text-red-600 transition-colors text-lg"
+                      className="text-graphite-600 hover:text-graphite-400 transition-colors pb-2.5 text-lg leading-none shrink-0"
                     >
                       ×
                     </button>
@@ -112,23 +112,23 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={addOption}
-              className="mt-3 text-xs tracking-wider uppercase text-gold-600 hover:text-gold-500 font-medium transition-colors underline underline-offset-4"
+              className="mt-5 text-[9px] tracking-[0.4em] uppercase text-gold-600 hover:text-gold-500 font-medium transition-colors"
             >
-              + Add Candidate
+              + Add book
             </button>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 py-3.5 bg-ink-900 text-cream-100 text-sm font-medium tracking-wide hover:bg-ink-800 transition-colors disabled:opacity-50"
+            className="mt-2 py-3.5 bg-gold-600 text-graphite-950 text-[10px] font-semibold tracking-[0.35em] uppercase hover:bg-gold-500 transition-colors disabled:opacity-40"
           >
             {loading ? "Creating…" : "Create Poll"}
           </button>
         </form>
 
         {message && (
-          <p className={`mt-6 text-sm text-center ${message.startsWith("Error") ? "text-red-700" : "text-green-700"}`}>
+          <p className={`mt-8 text-xs tracking-wide ${message.startsWith("Error") ? "text-red-400" : "text-graphite-400"}`}>
             {message}
           </p>
         )}
