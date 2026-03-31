@@ -73,6 +73,38 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  res.setHeader("Allow", "GET, POST");
+  // ── PATCH /api/polls/:pollId — update status ───────────────────────────
+  if (req.method === "PATCH") {
+    const { status } = req.body;
+    const valid = ["DRAFT", "OPEN", "CLOSED"];
+    if (!status || !valid.includes(status)) {
+      return res.status(400).json({ error: "status must be DRAFT, OPEN, or CLOSED" });
+    }
+    try {
+      const poll = await prisma.poll.update({
+        where: { id: pollId },
+        data: { status },
+      });
+      return res.status(200).json(poll);
+    } catch (err) {
+      if (err.code === "P2025") return res.status(404).json({ error: "Poll not found" });
+      console.error(err);
+      return res.status(500).json({ error: "Failed to update poll" });
+    }
+  }
+
+  // ── DELETE /api/polls/:pollId ───────────────────────────────────────────
+  if (req.method === "DELETE") {
+    try {
+      await prisma.poll.delete({ where: { id: pollId } });
+      return res.status(204).end();
+    } catch (err) {
+      if (err.code === "P2025") return res.status(404).json({ error: "Poll not found" });
+      console.error(err);
+      return res.status(500).json({ error: "Failed to delete poll" });
+    }
+  }
+
+  res.setHeader("Allow", "GET, POST, PATCH, DELETE");
   return res.status(405).json({ error: "Method not allowed" });
 };

@@ -8,7 +8,10 @@ module.exports = async function handler(req, res) {
     try {
       const polls = await prisma.poll.findMany({
         orderBy: { createdAt: "desc" },
-        include: { options: { orderBy: { order: "asc" } } },
+        include: {
+          options: { orderBy: { order: "asc" } },
+          _count: { select: { ballots: true } },
+        },
       });
       return res.status(200).json(polls);
     } catch (err) {

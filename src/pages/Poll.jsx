@@ -140,44 +140,44 @@ export default function Poll() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-graphite-950">
-        <p className="font-display text-2xl italic text-parchment-300">Loading…</p>
+      <div className="min-h-screen flex items-center justify-center bg-pastel-bg">
+        <p className="font-display text-2xl italic text-pastel-mid">Loading…</p>
       </div>
     );
   }
 
   if (error && !poll) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-graphite-950">
-        <p className="font-display text-xl text-parchment-300">{error}</p>
+      <div className="min-h-screen flex items-center justify-center bg-pastel-bg">
+        <p className="font-display text-xl text-pastel-mid">{error}</p>
       </div>
     );
   }
 
   if (poll?.status === "DRAFT") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-graphite-950">
-        <p className="font-display text-xl italic text-parchment-300">Poll not open yet.</p>
+      <div className="min-h-screen flex items-center justify-center bg-pastel-bg">
+        <p className="font-display text-xl italic text-pastel-mid">Poll not open yet.</p>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-graphite-950 px-8 py-20">
+    <main className="min-h-screen bg-pastel-bg px-8 py-20">
       <div className="max-w-lg mx-auto">
 
         <header className="mb-14">
-          <p className="text-[9px] tracking-[0.5em] uppercase text-gold-600 font-medium mb-5">Your Ballot</p>
-          <h1 className="font-display text-5xl font-semibold text-parchment-100 leading-none">{poll.month}</h1>
-          <p className="text-[10px] tracking-[0.25em] uppercase text-parchment-300 mt-4">Drag to rank · Submit when ready</p>
+          <p className="text-[9px] tracking-[0.5em] uppercase text-pastel-gold font-medium mb-5">Your Ballot</p>
+          <h1 className="font-display text-5xl font-light text-pastel-ink leading-none">{poll.month}</h1>
+          <p className="text-[10px] tracking-[0.25em] uppercase text-pastel-mid mt-4">Drag to rank · Submit when ready</p>
         </header>
 
         {poll.status === "CLOSED" ? (
-          <div className="py-12 border-t border-graphite-800">
-            <p className="font-display text-xl italic text-parchment-300 mb-6">Voting is now closed.</p>
+          <div className="py-12 border-t border-pastel-border">
+            <p className="font-display text-xl italic text-pastel-mid mb-6">Voting is now closed.</p>
             <Link
               to={`/results/${poll.id}`}
-              className="text-[10px] tracking-[0.35em] uppercase text-gold-600 hover:text-gold-500 transition-colors"
+              className="text-[10px] tracking-[0.35em] uppercase text-pastel-gold hover:text-pastel-ink transition-colors"
             >
               See results →
             </Link>
@@ -185,11 +185,11 @@ export default function Poll() {
         ) : (
           <>
             {submitted && (
-              <div className="mb-10 py-4 border-t border-b border-graphite-800 flex items-center justify-between gap-4">
-                <span className="text-xs text-parchment-200 tracking-wide">Vote recorded.</span>
+              <div className="mb-10 py-4 border-t border-b border-pastel-border flex items-center justify-between gap-4">
+                <span className="text-xs text-pastel-ink tracking-wide">Vote recorded.</span>
                 <Link
                   to={`/results/${poll.id}`}
-                  className="text-[9px] tracking-[0.35em] uppercase text-gold-600 hover:text-gold-500 transition-colors shrink-0"
+                  className="text-[9px] tracking-[0.35em] uppercase text-pastel-gold hover:text-pastel-ink transition-colors shrink-0"
                 >
                   See results →
                 </Link>
@@ -197,15 +197,15 @@ export default function Poll() {
             )}
 
             {error && (
-              <p className="mb-6 text-[11px] text-red-400">{error}</p>
+              <p className="mb-6 text-[11px] text-pastel-rose">{error}</p>
             )}
 
             {submitted ? (
               <div className="flex flex-col opacity-40 pointer-events-none select-none">
                 {ranking.map((option, index) => (
-                  <div key={option.id} className="flex items-center gap-4 py-4 border-b border-graphite-800">
-                    <span className="text-[11px] text-gold-600 font-medium tabular-nums w-4 shrink-0">{index + 1}</span>
-                    <p className="font-display text-lg text-parchment-100 leading-snug">{option.label}</p>
+                  <div key={option.id} className="flex items-center gap-4 py-4 border-b border-pastel-border">
+                    <span className="text-[11px] text-pastel-gold font-medium tabular-nums w-4 shrink-0">{index + 1}</span>
+                    <p className="font-display text-lg text-pastel-ink leading-snug">{option.label}</p>
                   </div>
                 ))}
               </div>
@@ -222,20 +222,20 @@ export default function Poll() {
             )}
 
             {confirming && (
-              <div className="mt-10 pt-8 border-t border-graphite-800">
-                <p className="font-display text-2xl text-parchment-100 mb-1">Are you sure?</p>
-                <p className="text-sm text-parchment-300 font-light mb-7">Your ballot cannot be changed after submission.</p>
+              <div className="mt-10 pt-8 border-t border-pastel-border">
+                <p className="font-display text-2xl text-pastel-ink mb-1">Are you sure?</p>
+                <p className="text-sm text-pastel-mid font-light mb-7">Your ballot cannot be changed after submission.</p>
                 <div className="flex gap-5">
                   <button
                     onClick={() => setConfirming(false)}
-                    className="text-[9px] tracking-[0.35em] uppercase text-parchment-300 hover:text-parchment-100 transition-colors"
+                    className="text-[9px] tracking-[0.35em] uppercase text-pastel-mid hover:text-pastel-ink transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSubmit}
                     disabled={submitting}
-                    className="text-[9px] tracking-[0.35em] uppercase text-gold-600 hover:text-gold-500 transition-colors disabled:opacity-40 font-medium"
+                    className="text-[9px] tracking-[0.35em] uppercase text-pastel-gold hover:text-pastel-ink transition-colors disabled:opacity-40 font-medium"
                   >
                     {submitting ? "Submitting…" : "Confirm"}
                   </button>
@@ -244,13 +244,13 @@ export default function Poll() {
             )}
 
             <div className="mt-10 flex items-center justify-between">
-              <Link to="/polls" className="text-[9px] tracking-[0.35em] uppercase text-parchment-300 hover:text-parchment-100 transition-colors">
+              <Link to="/polls" className="text-[9px] tracking-[0.35em] uppercase text-pastel-mid hover:text-pastel-ink transition-colors">
                 ← Back
               </Link>
               {!submitted && !confirming && (
                 <button
                   onClick={() => setConfirming(true)}
-                  className="py-3 px-8 bg-gold-600 text-graphite-950 text-[10px] font-semibold tracking-[0.35em] uppercase hover:bg-gold-500 transition-colors"
+                  className="py-3 px-8 bg-pastel-ink text-pastel-card text-[10px] font-semibold tracking-[0.35em] uppercase hover:bg-pastel-gold hover:text-pastel-ink transition-colors"
                 >
                   Submit Ballot
                 </button>

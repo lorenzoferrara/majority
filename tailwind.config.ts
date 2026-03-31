@@ -34,6 +34,17 @@ const config: Config = {
           600: "#9c7a18",
           700: "#7a5c0f",
         },
+        pastel: {
+          bg:     "#F4F0EC",
+          card:   "#FDFAF7",
+          border: "#E2DAD2",
+          ink:    "#1C1712",
+          mid:    "#7D7168",
+          muted:  "#B8B0A8",
+          gold:   "#C4A46A",
+          sage:   "#7A9E8A",
+          rose:   "#C49090",
+        },
         warm: {
           bg:      "#FFECD6",
           surface: "#FAE2CC",
