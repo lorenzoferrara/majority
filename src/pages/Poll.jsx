@@ -64,6 +64,7 @@ export default function Poll() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("majority_user") ?? "null");
@@ -189,7 +190,7 @@ export default function Poll() {
           <>
             {submitted && (
               <div className="mb-6 px-4 py-3 border border-green-300 bg-green-50 text-green-700 text-sm flex items-center justify-between gap-4">
-                <span>✓ Your vote has been recorded. You can change it by re-ranking and submitting again.</span>
+                <span>✓ Your vote has been recorded.</span>
                 <Link
                   to={`/results/${poll.id}`}
                   className="shrink-0 px-4 py-1.5 border border-green-600 text-green-700 text-xs tracking-widest uppercase font-medium hover:bg-green-100 transition-colors"
@@ -205,27 +206,68 @@ export default function Poll() {
               </div>
             )}
 
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={ranking.map((o) => o.id)} strategy={verticalListSortingStrategy}>
-                <div className="flex flex-col gap-2">
-                  {ranking.map((option, index) => (
-                    <SortableOption key={option.id} option={option} index={index} />
-                  ))}
+            {submitted ? (
+              <div className="flex flex-col gap-2 opacity-60 pointer-events-none select-none">
+                {ranking.map((option, index) => (
+                  <div key={option.id} className="flex items-center gap-4 p-4 border border-cream-300 bg-cream-50">
+                    <span className="w-7 h-7 flex items-center justify-center border border-gold-400 text-gold-600 text-xs font-medium shrink-0">
+                      {index + 1}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-display text-ink-900 font-medium leading-snug">{option.label}</p>
+                      {option.description && (
+                        <p className="text-ink-300 text-xs mt-0.5 truncate">{option.description}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={ranking.map((o) => o.id)} strategy={verticalListSortingStrategy}>
+                  <div className="flex flex-col gap-2">
+                    {ranking.map((option, index) => (
+                      <SortableOption key={option.id} option={option} index={index} />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            )}
+
+            {confirming && (
+              <div className="mt-6 p-5 border border-gold-400 bg-cream-50 text-center">
+                <p className="font-display text-ink-900 text-lg mb-1">Are you sure?</p>
+                <p className="text-ink-300 text-sm mb-5">Your ballot cannot be changed after submission.</p>
+                <div className="flex justify-center gap-3">
+                  <button
+                    onClick={() => setConfirming(false)}
+                    className="px-6 py-2 border border-cream-300 text-ink-400 text-xs tracking-widest uppercase hover:border-ink-300 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={submitting}
+                    className="px-6 py-2 bg-ink-900 text-cream-100 text-xs tracking-widest uppercase font-medium hover:bg-gold-700 transition-colors disabled:opacity-50"
+                  >
+                    {submitting ? "Submitting…" : "Confirm"}
+                  </button>
                 </div>
-              </SortableContext>
-            </DndContext>
+              </div>
+            )}
 
             <div className="mt-8 flex items-center justify-between">
               <Link to="/polls" className="text-xs text-ink-200 hover:text-gold-500 transition-colors">
                 ← Back to polls
               </Link>
-              <button
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="px-8 py-3 bg-ink-900 text-cream-100 text-sm tracking-widest uppercase font-medium hover:bg-gold-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? "Submitting…" : submitted ? "Update Vote" : "Submit Ballot"}
-              </button>
+              {!submitted && !confirming && (
+                <button
+                  onClick={() => setConfirming(true)}
+                  className="px-8 py-3 bg-ink-900 text-cream-100 text-sm tracking-widest uppercase font-medium hover:bg-gold-700 transition-colors"
+                >
+                  Submit Ballot
+                </button>
+              )}
             </div>
           </>
         )}

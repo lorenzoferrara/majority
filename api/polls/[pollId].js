@@ -46,8 +46,11 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-      // Upsert: delete existing ballot if present, then create fresh
-      await prisma.ballot.deleteMany({ where: { pollId, userId } });
+      // Reject if ballot already exists
+      const existing = await prisma.ballot.findFirst({ where: { pollId, userId } });
+      if (existing) {
+        return res.status(409).json({ error: "You have already voted in this poll." });
+      }
 
       const ballot = await prisma.ballot.create({
         data: {

@@ -67,7 +67,7 @@ module.exports = async (req, res) => {
     where: { id: pollId },
     include: {
       options: { orderBy: { order: "asc" } },
-      ballots: { include: { rankings: { orderBy: { rank: "asc" } } } },
+      ballots: { include: { choices: { orderBy: { rank: "asc" } } } },
     },
   });
 
@@ -77,7 +77,7 @@ module.exports = async (req, res) => {
   const optionMap = Object.fromEntries(poll.options.map((o) => [o.id, o]));
 
   const rawBallots = poll.ballots.map((b) => ({
-    preferences: b.rankings.map((r) => r.optionId),
+    preferences: b.choices.map((r) => r.optionId),
   }));
 
   const { winner, rounds, isTie } = runIRV(rawBallots, optionIds);

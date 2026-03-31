@@ -4,21 +4,48 @@ import { Link } from "react-router-dom";
 export default function PollsPage() {
   const [polls, setPolls] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
+  function loadPolls() {
+    setLoading(true);
+    setError(null);
     fetch("/api/polls")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        return res.json();
+      })
       .then((data) => {
         setPolls(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
-  }, []);
+      .catch((err) => {
+        setError(err.message || "Failed to load polls");
+        setLoading(false);
+      });
+  }
+
+  useEffect(() => { loadPolls(); }, []);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream-100">
         <p className="font-display text-xl text-ink-300">Loading…</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-cream-100">
+        <div className="text-center">
+          <p className="font-display text-xl text-red-600 mb-4">{error}</p>
+          <button
+            onClick={loadPolls}
+            className="px-6 py-2 bg-ink-900 text-cream-100 text-sm font-medium tracking-wide hover:bg-ink-800 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
