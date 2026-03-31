@@ -56,7 +56,7 @@ model Option {
 model Ballot {
   id        String   @id @default(cuid())
   pollId    String
-  userId    String                            // Clerk user ID
+  userId    String                            // user ID
   submittedAt DateTime @default(now())
 
   poll     Poll           @relation(fields: [pollId], references: [id], onDelete: Cascade)
