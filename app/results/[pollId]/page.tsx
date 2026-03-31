@@ -21,57 +21,75 @@ export default async function ResultsPage({
     poll.options.find((o) => o.id === id)?.label ?? id;
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="text-3xl font-bold">{poll.title} — Results</h1>
-      <p className="mt-1 text-gray-500">{poll._count.ballots} ballots cast</p>
+    <main className="min-h-screen bg-cream-100 px-6 py-16">
+      <div className="max-w-2xl mx-auto">
 
-      {result.winner && (
-        <div className="mt-8 rounded-2xl border-2 border-yellow-400 bg-yellow-50 p-8 text-center">
-          <div className="text-5xl">🏆</div>
-          <p className="mt-3 text-2xl font-bold">{optionLabel(result.winner)}</p>
-        </div>
-      )}
-
-      {result.isTie && (
-        <div className="mt-8 rounded-xl bg-gray-100 p-6 text-center">
-          <p className="text-lg font-semibold">The election ended in a tie.</p>
-        </div>
-      )}
-
-      <section className="mt-12 space-y-6">
-        <h2 className="text-xl font-semibold">Round by round</h2>
-        {result.rounds.map((round) => (
-          <div key={round.round} className="rounded-xl border p-5">
-            <h3 className="font-semibold">Round {round.round}</h3>
-            <ul className="mt-3 space-y-2">
-              {Object.entries(round.counts)
-                .sort(([, a], [, b]) => b - a)
-                .map(([id, count]) => {
-                  const pct = round.totalActive
-                    ? ((count / round.totalActive) * 100).toFixed(1)
-                    : "0";
-                  const isElim = round.eliminated.includes(id);
-                  return (
-                    <li key={id} className="flex items-center gap-3">
-                      <span className={`w-40 truncate text-sm ${isElim ? "line-through text-gray-400" : ""}`}>
-                        {optionLabel(id)}
-                      </span>
-                      <div className="flex-1 h-4 rounded-full bg-gray-100 overflow-hidden">
-                        <div
-                          className="h-4 rounded-full bg-indigo-400"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <span className="text-sm text-gray-500 w-20 text-right">
-                        {count} ({pct}%)
-                      </span>
-                    </li>
-                  );
-                })}
-            </ul>
+        {/* Header */}
+        <header className="mb-12 text-center">
+          <p className="text-xs tracking-[0.3em] uppercase text-gold-600 font-medium mb-3">Final Results</p>
+          <h1 className="font-display text-4xl md:text-5xl font-bold text-ink-900">{poll.title}</h1>
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <div className="h-px w-10 bg-gold-400" />
+            <span className="text-xs text-ink-200">{poll._count.ballots} ballot{poll._count.ballots !== 1 ? "s" : ""} cast</span>
+            <div className="h-px w-10 bg-gold-400" />
           </div>
-        ))}
-      </section>
+        </header>
+
+        {/* Winner */}
+        {result.winner && (
+          <div className="mb-12 border-2 border-gold-500 bg-cream-50 p-10 text-center">
+            <div className="text-5xl mb-4">🏆</div>
+            <p className="text-xs tracking-[0.3em] uppercase text-gold-600 font-medium mb-2">And the winner is</p>
+            <p className="font-display text-3xl font-bold text-ink-900">{optionLabel(result.winner)}</p>
+          </div>
+        )}
+
+        {/* Tie */}
+        {result.isTie && (
+          <div className="mb-12 border border-cream-300 bg-cream-50 p-8 text-center">
+            <p className="font-display text-xl text-ink-700">The election ended in a tie.</p>
+          </div>
+        )}
+
+        {/* Round by round */}
+        <section className="space-y-6">
+          <h2 className="font-display text-xl font-semibold text-ink-900">Round by Round</h2>
+          {result.rounds.map((round) => (
+            <div key={round.round} className="border border-cream-300 bg-cream-50 p-5">
+              <h3 className="text-xs font-medium tracking-widest uppercase text-ink-300 mb-4">
+                Round {round.round}
+              </h3>
+              <ul className="space-y-3">
+                {Object.entries(round.counts)
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([id, count]) => {
+                    const pct = round.totalActive
+                      ? ((count / round.totalActive) * 100).toFixed(1)
+                      : "0";
+                    const isElim = round.eliminated.includes(id);
+                    return (
+                      <li key={id} className="flex items-center gap-3">
+                        <span className={`w-40 truncate text-sm font-medium ${isElim ? "line-through text-ink-200" : "text-ink-800"}`}>
+                          {optionLabel(id)}
+                        </span>
+                        <div className="flex-1 h-2 bg-cream-200 overflow-hidden">
+                          <div
+                            className={`h-2 transition-all duration-500 ${isElim ? "bg-ink-100" : "bg-gold-500"}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-ink-300 w-20 text-right tabular-nums">
+                          {count} ({pct}%)
+                        </span>
+                      </li>
+                    );
+                  })}
+              </ul>
+            </div>
+          ))}
+        </section>
+
+      </div>
     </main>
   );
 }

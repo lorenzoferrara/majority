@@ -9,43 +9,59 @@ export default async function PollsPage() {
 
   if (polls.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-orange-200">
-        <p className="text-xl">No polls available yet.</p>
+      <div className="min-h-screen flex items-center justify-center bg-cream-100">
+        <p className="font-display text-xl text-ink-500">No polls available yet.</p>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-black p-8">
-      <h1 className="text-4xl font-bold text-orange-400 mb-8 text-center">
-        🏆 Current Polls
-      </h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {polls.map((poll) => (
-          <Link
-            key={poll.id}
-            href={`/polls/${poll.id}`}
-            className="block bg-gradient-to-br from-orange-500/20 to-orange-300/10 border border-orange-400 rounded-xl p-6 hover:scale-105 transition-transform duration-200"
-          >
-            <h2 className="text-2xl font-semibold text-orange-200 mb-2">
-              {poll.title}
-            </h2>
-            {poll.description && (
-              <p className="text-orange-100/80 mb-3">{poll.description}</p>
-            )}
-            <span
-              className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                poll.status === "OPEN"
-                  ? "bg-green-600 text-black"
-                  : poll.status === "CLOSED"
-                  ? "bg-red-600 text-black"
-                  : "bg-gray-500 text-black"
-              }`}
+    <main className="min-h-screen bg-cream-100 px-6 py-16">
+      <div className="max-w-2xl mx-auto">
+
+        <header className="mb-12 text-center">
+          <p className="text-xs tracking-[0.3em] uppercase text-gold-600 font-medium mb-3">Select a Category</p>
+          <h1 className="font-display text-5xl font-bold text-ink-900">Current Polls</h1>
+          <div className="mt-5 flex items-center justify-center gap-3">
+            <div className="h-px w-12 bg-gold-400" />
+            <span className="text-xs text-ink-200">Vote · Rank · Decide</span>
+            <div className="h-px w-12 bg-gold-400" />
+          </div>
+        </header>
+
+        <div className="flex flex-col divide-y divide-cream-200">
+          {polls.map((poll) => (
+            <Link
+              key={poll.id}
+              href={`/polls/${poll.id}`}
+              className="group flex items-center justify-between py-6 hover:pl-2 transition-all duration-200"
             >
-              {poll.status}
-            </span>
-          </Link>
-        ))}
+              <div>
+                <h2 className="font-display text-xl font-semibold text-ink-900 group-hover:text-gold-700 transition-colors">
+                  {poll.title}
+                </h2>
+                {poll.description && (
+                  <p className="text-ink-300 text-sm mt-1">{poll.description}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-3 shrink-0 ml-4">
+                <span
+                  className={`text-xs tracking-wider uppercase font-medium px-2.5 py-1 border ${
+                    poll.status === "OPEN"
+                      ? "text-green-700 border-green-300 bg-green-50"
+                      : poll.status === "CLOSED"
+                      ? "text-red-700 border-red-200 bg-red-50"
+                      : "text-ink-300 border-cream-300 bg-cream-200"
+                  }`}
+                >
+                  {poll.status}
+                </span>
+                <span className="text-ink-200 group-hover:text-gold-500 transition-colors text-lg">→</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+
       </div>
     </main>
   );

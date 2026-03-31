@@ -27,16 +27,16 @@ export default async function VotingPage({
 
   if (!poll) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-orange-200">
-        <p className="text-xl">Poll not found.</p>
+      <div className="min-h-screen flex items-center justify-center bg-cream-100">
+        <p className="font-display text-xl text-ink-500">Poll not found.</p>
       </div>
     );
   }
 
   if (poll.status === "DRAFT") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-orange-200">
-        <p className="text-xl">Poll not open yet.</p>
+      <div className="min-h-screen flex items-center justify-center bg-cream-100">
+        <p className="font-display text-xl text-ink-500">Poll not open yet.</p>
       </div>
     );
   }
@@ -44,32 +44,37 @@ export default async function VotingPage({
   const existing = poll.ballots[0]?.choices.map((c) => c.optionId);
 
   return (
-    <main className="min-h-screen bg-black p-8">
-      <h1 className="text-4xl font-bold text-orange-400 mb-8 text-center">
-        🏆 {poll.title}
-      </h1>
+    <main className="min-h-screen bg-cream-100 px-6 py-16">
+      <div className="max-w-2xl mx-auto">
 
-      {poll.status === "CLOSED" ? (
-        <div className="flex justify-center">
-          <div className="bg-gradient-to-br from-orange-500/20 to-orange-300/10 border border-orange-400 rounded-xl p-6 text-center">
-            <p className="text-orange-200 mb-3">Voting is closed.</p>
+        <header className="mb-10 text-center">
+          <p className="text-xs tracking-[0.3em] uppercase text-gold-600 font-medium mb-3">Your Ballot</p>
+          <h1 className="font-display text-4xl md:text-5xl font-bold text-ink-900">{poll.title}</h1>
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <div className="h-px w-10 bg-gold-400" />
+            <span className="text-xs text-ink-200">Drag to rank · Submit when ready</span>
+            <div className="h-px w-10 bg-gold-400" />
+          </div>
+        </header>
+
+        {poll.status === "CLOSED" ? (
+          <div className="text-center p-10 border border-cream-300 bg-cream-50">
+            <p className="text-ink-700 mb-4 font-display text-lg">Voting is now closed.</p>
             <a
               href={`/results/${poll.id}`}
-              className="text-orange-400 underline font-medium"
+              className="text-gold-600 hover:text-gold-500 underline underline-offset-4 font-medium text-sm"
             >
               See results →
             </a>
           </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6">
+        ) : (
           <RankingBoard
             pollId={poll.id}
             options={poll.options}
             existingRanking={existing}
           />
-        </div>
-      )}
+        )}
+      </div>
     </main>
   );
 }

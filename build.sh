@@ -1,2 +1,3 @@
-npx prisma db push
+npm install
+npx prisma@5 db push
 npm run dev

@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    background-color: theme('colors.cream.100');
+    color: theme('colors.ink.900');
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+}

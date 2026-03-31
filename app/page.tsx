@@ -2,44 +2,53 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-gradient-to-br from-black via-zinc-900 to-black text-zinc-100">
-      
+    <main className="min-h-screen flex flex-col items-center justify-center px-6 bg-cream-100 relative overflow-hidden">
+
+      {/* Top gold rule */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-cream-100 via-gold-500 to-cream-100" />
+
+      {/* Trophy mark */}
+      <div className="mb-8 flex flex-col items-center gap-3">
+        <div className="w-16 h-16 rounded-full border-2 border-gold-500 flex items-center justify-center text-2xl">
+          🏆
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="h-px w-10 bg-gold-400" />
+          <span className="text-xs tracking-[0.3em] uppercase text-ink-300 font-medium">Academy</span>
+          <div className="h-px w-10 bg-gold-400" />
+        </div>
+      </div>
+
       {/* Title */}
-      <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-center">
-        <span className="bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-200 bg-clip-text text-transparent">
-          🏆 Oscar Voting
-        </span>
+      <h1 className="font-display text-5xl md:text-7xl font-bold text-ink-900 text-center leading-tight">
+        Oscar Voting
       </h1>
 
+      <div className="mt-4 flex items-center gap-3">
+        <div className="h-px w-6 bg-gold-500" />
+        <p className="text-xs tracking-[0.25em] uppercase text-ink-300">Best Picture · 2026</p>
+        <div className="h-px w-6 bg-gold-500" />
+      </div>
+
       {/* Subtitle */}
-      <p className="mt-3 text-zinc-400 text-center max-w-md text-sm md:text-base">
-        Rank your favorite films and let the instant-runoff system decide the winner.
+      <p className="mt-6 text-ink-500 text-center max-w-xs text-base leading-relaxed">
+        Rank your favourite nominees. The instant-runoff method will find the people's champion.
       </p>
 
       {/* CTA */}
       <Link
         href="/sign-in"
-        className="
-          mt-8
-          px-6 py-3
-          rounded-xl
-          font-semibold
-          text-black
-          bg-gradient-to-r from-orange-400 to-amber-300
-          hover:from-orange-300 hover:to-yellow-200
-          transition-all duration-200
-          shadow-lg shadow-orange-500/20
-          hover:shadow-orange-400/40
-          active:scale-95
-        "
+        className="mt-10 px-8 py-3.5 bg-ink-900 text-cream-100 text-sm font-medium tracking-wide hover:bg-ink-800 transition-colors duration-200"
       >
-        Sign in to vote →
+        Enter the Ballot Room →
       </Link>
 
-      {/* Decorative glow */}
-      <div className="absolute inset-0 -z-10 flex items-center justify-center">
-        <div className="w-[500px] h-[500px] bg-orange-500/10 blur-3xl rounded-full" />
-      </div>
+      <Link href="/polls" className="mt-4 text-sm text-gold-600 hover:text-gold-500 transition-colors underline underline-offset-4">
+        View all polls
+      </Link>
+
+      {/* Bottom gold rule */}
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-cream-100 via-gold-500 to-cream-100" />
 
     </main>
   );
