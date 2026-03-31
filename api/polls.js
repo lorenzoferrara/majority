@@ -38,6 +38,7 @@ module.exports = async function handler(req, res) {
         },
         include: { options: true },
       });
+      if (req.broadcast) req.broadcast("polls-changed", { action: "created", pollId: poll.id });
       return res.status(201).json(poll);
     } catch (err) {
       if (err.code === "P2002") {

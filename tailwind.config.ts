@@ -35,14 +35,15 @@ const config: Config = {
           700: "#7a5c0f",
         },
         pastel: {
-          bg:     "#F4F0EC",
+          bg:     "#c9c4c1",
           card:   "#FDFAF7",
+          option: "#e3f0e9",
           border: "#E2DAD2",
           ink:    "#1C1712",
           mid:    "#7D7168",
           muted:  "#B8B0A8",
           gold:   "#C4A46A",
-          sage:   "#7A9E8A",
+          sage:   "#49b178",
           rose:   "#C49090",
         },
         warm: {

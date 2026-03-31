@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently -k \"node server.js\" \"vite\"",
+    "dev": "concurrently -k \"vite\" \"node server.js\"",
     "dev:api": "node server.js",
     "build": "vite build",
     "preview": "vite preview",

@@ -58,7 +58,7 @@ export default function SignIn() {
             </label>
             <input
               type="text"
-              placeholder="e.g. Lorenzo"
+              placeholder="e.g. Gianfranca"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full bg-transparent border-b border-pastel-border pb-2.5 text-base text-pastel-ink placeholder-pastel-muted focus:outline-none focus:border-pastel-gold transition-colors duration-200"

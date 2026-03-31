@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useSSE } from "../hooks/useSSE";
 
 export default function PollsPage() {
   const [polls, setPolls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  useSSE({ "polls-changed": loadPolls });
 
   function loadPolls() {
     setLoading(true);
@@ -53,12 +56,12 @@ export default function PollsPage() {
 
         {!loading && !error && polls.length > 0 && (
           <>
-            <div>
+            <div className="flex flex-col gap-3">
               {polls.map((poll) => (
                 <Link
                   key={poll.id}
                   to={`/polls/${poll.id}`}
-                  className="group flex items-center justify-between py-4 border-b border-pastel-border last:border-b-0 hover:border-pastel-gold transition-colors duration-200"
+                  className="group flex items-center justify-between px-5 py-4 border border-pastel-border bg-pastel-option hover:border-pastel-gold hover:bg-[#fdf8f0] transition-all duration-200"
                 >
                   <div className="min-w-0">
                     <p className="font-display text-2xl text-pastel-ink group-hover:text-pastel-gold transition-colors duration-200 leading-snug">

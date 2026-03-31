@@ -11,7 +11,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/api": "http://localhost:3001",
+      "/api": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+      },
     },
-  },  // proxy only active when running npm run dev:api alongside
+  },
 });

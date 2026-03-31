@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useSSE } from "../hooks/useSSE";
 
 export default function Results() {
   const { pollId } = useParams();
@@ -7,13 +8,16 @@ export default function Results() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  function loadResults() {
     fetch(`/api/results/${pollId}`)
       .then((r) => r.ok ? r.json() : Promise.reject("Failed to load results"))
       .then(setData)
       .catch((e) => setError(typeof e === "string" ? e : "Failed to load results"))
       .finally(() => setLoading(false));
-  }, [pollId]);
+  }
+
+  useEffect(() => { loadResults(); }, [pollId]);
+  useSSE({ "ballot-submitted": loadResults });
 
   if (loading) {
     return (

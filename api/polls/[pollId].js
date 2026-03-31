@@ -66,6 +66,7 @@ module.exports = async function handler(req, res) {
         include: { choices: true },
       });
 
+      if (req.broadcast) req.broadcast("ballot-submitted", { pollId });
       return res.status(201).json(ballot);
     } catch (err) {
       console.error(err);
@@ -85,6 +86,7 @@ module.exports = async function handler(req, res) {
         where: { id: pollId },
         data: { status },
       });
+      if (req.broadcast) req.broadcast("polls-changed", { action: "updated", pollId });
       return res.status(200).json(poll);
     } catch (err) {
       if (err.code === "P2025") return res.status(404).json({ error: "Poll not found" });
@@ -97,6 +99,7 @@ module.exports = async function handler(req, res) {
   if (req.method === "DELETE") {
     try {
       await prisma.poll.delete({ where: { id: pollId } });
+      if (req.broadcast) req.broadcast("polls-changed", { action: "deleted", pollId });
       return res.status(204).end();
     } catch (err) {
       if (err.code === "P2025") return res.status(404).json({ error: "Poll not found" });

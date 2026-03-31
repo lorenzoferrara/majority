@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
+import { useSSE } from "../hooks/useSSE";
 
 const STATUS_CYCLE = { DRAFT: "OPEN", OPEN: "CLOSED", CLOSED: "DRAFT" };
 const STATUS_COLORS = {
@@ -36,6 +37,7 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => { loadPolls(); }, [loadPolls]);
+  useSSE({ "polls-changed": loadPolls });
 
   useEffect(() => {
     if (focusIndex !== null && inputRefs.current[focusIndex]) {
