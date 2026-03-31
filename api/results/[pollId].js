@@ -37,8 +37,8 @@ function runIRV(ballots, options) {
     const toEliminate = Object.entries(counts).filter(([, v]) => v === minVotes).map(([id]) => id);
 
     if (toEliminate.length === active.size) {
-      rounds.push({ round: roundNumber, counts, totalActive, eliminated: toEliminate });
-      return { winner: null, rounds, isTie: true };
+      rounds.push({ round: roundNumber, counts, totalActive, eliminated: [], winners: toEliminate });
+      return { winner: null, winners: toEliminate, rounds, isTie: true };
     }
 
     for (const id of toEliminate) active.delete(id);
@@ -80,7 +80,7 @@ module.exports = async (req, res) => {
     preferences: b.choices.map((r) => r.optionId),
   }));
 
-  const { winner, rounds, isTie } = runIRV(rawBallots, optionIds);
+  const { winner, winners: tiedWinners, rounds, isTie } = runIRV(rawBallots, optionIds);
 
   // Tally first-choice counts for display
   const firstChoiceCounts = {};
@@ -89,11 +89,18 @@ module.exports = async (req, res) => {
     if (b.preferences[0]) firstChoiceCounts[b.preferences[0]]++;
   }
 
+  const voters = poll.ballots
+    .slice()
+    .sort((a, b) => new Date(a.submittedAt) - new Date(b.submittedAt))
+    .map((b) => ({ name: b.userId, submittedAt: b.submittedAt }));
+
   return res.status(200).json({
     poll: { id: poll.id, month: poll.month, status: poll.status },
     options: poll.options,
     totalBallots: poll.ballots.length,
+    voters,
     winner: winner ? optionMap[winner] : null,
+    winners: tiedWinners ? tiedWinners.map((id) => optionMap[id]) : [],
     isTie,
     firstChoiceCounts,
     rounds: rounds.map((r) => ({
@@ -101,6 +108,7 @@ module.exports = async (req, res) => {
       counts: r.counts,
       totalActive: r.totalActive,
       eliminated: r.eliminated.map((id) => optionMap[id]),
+      winners: (r.winners || []).map((id) => optionMap[id]),
       winner: r.winner ? optionMap[r.winner] : null,
     })),
   });

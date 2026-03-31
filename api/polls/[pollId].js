@@ -77,9 +77,9 @@ module.exports = async function handler(req, res) {
   // ── PATCH /api/polls/:pollId — update status ───────────────────────────
   if (req.method === "PATCH") {
     const { status } = req.body;
-    const valid = ["DRAFT", "OPEN", "CLOSED"];
+    const valid = ["OPEN", "CLOSED"];
     if (!status || !valid.includes(status)) {
-      return res.status(400).json({ error: "status must be DRAFT, OPEN, or CLOSED" });
+      return res.status(400).json({ error: "status must be OPEN or CLOSED" });
     }
     try {
       const poll = await prisma.poll.update({

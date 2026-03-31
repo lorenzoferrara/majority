@@ -16,7 +16,7 @@ datasource db {
 model Poll {
   id          String    @id @default(cuid())
   month       String
-  status      PollStatus @default(DRAFT)
+  status      PollStatus @default(OPEN)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
@@ -28,7 +28,6 @@ model Poll {
 }
 
 enum PollStatus {
-  DRAFT
   OPEN
   CLOSED
 }

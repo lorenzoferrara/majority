@@ -2,11 +2,10 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useSSE } from "../hooks/useSSE";
 
-const STATUS_CYCLE = { DRAFT: "OPEN", OPEN: "CLOSED", CLOSED: "DRAFT" };
+const STATUS_CYCLE = { OPEN: "CLOSED", CLOSED: "OPEN" };
 const STATUS_COLORS = {
   OPEN: "text-pastel-sage",
   CLOSED: "text-pastel-rose",
-  DRAFT: "text-pastel-muted",
 };
 
 export default function AdminPage() {
@@ -19,7 +18,7 @@ export default function AdminPage() {
   // ── Create form ─────────────────────────────────────────────────────────
   const [showForm, setShowForm] = useState(false);
   const [month, setMonth] = useState("");
-  const [newStatus, setNewStatus] = useState("DRAFT");
+  const [newStatus, setNewStatus] = useState("OPEN");
   const [options, setOptions] = useState([""]);
   const [creating, setCreating] = useState(false);
   const [createMessage, setCreateMessage] = useState("");
@@ -92,7 +91,7 @@ export default function AdminPage() {
     });
     if (res.ok) {
       setCreateMessage("Poll created.");
-      setMonth(""); setNewStatus("DRAFT"); setOptions([""]); setShowForm(false);
+      setMonth(""); setNewStatus("OPEN"); setOptions([""]); setShowForm(false);
       loadPolls();
     } else {
       const data = await res.json();
@@ -222,7 +221,6 @@ export default function AdminPage() {
               <div>
                 <label className={labelClass}>Status</label>
                 <select value={newStatus} onChange={(e) => setNewStatus(e.target.value)} className={`${inputClass} appearance-none cursor-pointer`}>
-                  <option value="DRAFT">DRAFT</option>
                   <option value="OPEN">OPEN</option>
                   <option value="CLOSED">CLOSED</option>
                 </select>

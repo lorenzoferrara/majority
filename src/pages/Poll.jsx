@@ -60,7 +60,7 @@ function SortableOption({ option, index }) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-5 px-5 py-5 bg-[#f4f4f2] cursor-grab select-none transition-all duration-150 border-l-2 ${accent.bar.replace('bg-', 'border-')} ${
+      className={`flex items-center gap-3 px-4 py-3 bg-[#f4f4f2] cursor-grab select-none transition-all duration-150 border-l-2 ${accent.bar.replace('bg-', 'border-')} ${
         isDragging ? "opacity-50 shadow-lg" : "hover:bg-[#eeeeeb]"
       }`}
       {...attributes}
@@ -71,7 +71,7 @@ function SortableOption({ option, index }) {
 
       {/* label */}
       <div className="flex-1 min-w-0">
-        <p className="font-display text-2xl text-pastel-ink leading-snug">{option.label}</p>
+        <p className="font-display text-lg text-pastel-ink leading-snug font-semibold">{option.label}</p>
         {option.description && (
           <p className="text-pastel-mid text-sm mt-0.5 truncate">{option.description}</p>
         )}
@@ -192,16 +192,6 @@ export default function Poll() {
     );
   }
 
-  if (poll?.status === "DRAFT") {
-    return (
-      <main className={cardClass}>
-        <div className={innerClass}>
-          <p className="font-display text-xl italic text-pastel-mid">Poll not open yet.</p>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-2xl border border-pastel-border bg-pastel-card px-16 py-14">
@@ -245,9 +235,9 @@ export default function Poll() {
                 {ranking.map((option, index) => {
                   const accent = rankAccent(index);
                   return (
-                    <div key={option.id} className={`flex items-center gap-5 px-5 py-5 bg-[#f4f4f2] border-l-2 ${accent.bar.replace('bg-', 'border-')}`}>
+                    <div key={option.id} className={`flex items-center gap-3 px-4 py-3 bg-[#f4f4f2] border-l-2 ${accent.bar.replace('bg-', 'border-')}`}>
                       <RankBadge index={index} />
-                      <p className="font-display text-2xl font-semibold text-pastel-ink leading-snug">{option.label}</p>
+                      <p className="font-display text-lg font-semibold text-pastel-ink leading-snug">{option.label}</p>
                     </div>
                   );
                 })}

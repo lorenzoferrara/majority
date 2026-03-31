@@ -31,7 +31,7 @@ module.exports = async function handler(req, res) {
       const poll = await prisma.poll.create({
         data: {
           month,
-          status: status ?? "DRAFT",
+          status: status ?? "OPEN",
           options: {
             create: options.map((label, i) => ({ label, order: i })),
           },
