@@ -20,7 +20,7 @@ export default function App() {
 
         <div className="flex items-center justify-center gap-3 mb-8">
           <div className="h-px w-8 bg-pastel-border" />
-          <span className="text-[10px] tracking-[0.15em] uppercase text-pastel-muted">Read · Rank · Decide</span>
+          <span className="text-[10px] tracking-[0.15em] uppercase text-pastel-muted">Rank · Decide · Read</span>
           <div className="h-px w-8 bg-pastel-border" />
         </div>
 

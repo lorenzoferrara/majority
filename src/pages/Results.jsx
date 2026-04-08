@@ -59,6 +59,7 @@ export default function Results() {
   }
 
   const { poll, options, totalBallots, voters = [], winner, winners: tiedWinners, isTie, firstChoiceCounts, topTwoCounts = {}, rounds } = data;
+  const sortedVoters = [...voters].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
 
   return (
     <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-6 py-12">
@@ -277,9 +278,11 @@ export default function Results() {
 
         {/* Navigation */}
         <div className="flex items-center gap-8 text-[11px] tracking-[0.35em] uppercase border-t border-pastel-border pt-8">
-          <Link to={`/polls/${pollId}`} className="text-pastel-mid hover:text-pastel-ink transition-colors font-semibold">
-            ← Ballot
-          </Link>
+          {poll.status !== "CLOSED" && (
+            <Link to={`/polls/${pollId}`} className="text-pastel-mid hover:text-pastel-ink transition-colors font-semibold">
+              ← Ballot
+            </Link>
+          )}
           <Link to="/polls" className="text-pastel-mid hover:text-pastel-ink transition-colors font-semibold">
             All polls
           </Link>
@@ -290,11 +293,11 @@ export default function Results() {
       {/* Voters sidebar */}
       <div className="absolute top-0 left-full ml-4 w-44 border border-pastel-border bg-pastel-card px-4 py-5">
         <p className="text-[9px] tracking-[0.45em] uppercase text-pastel-gold font-semibold mb-4">Voted</p>
-        {voters.length === 0 ? (
+        {sortedVoters.length === 0 ? (
           <p className="text-[11px] text-pastel-muted italic">No votes yet.</p>
         ) : (
           <ul className="flex flex-col gap-2">
-            {voters.map((v, i) => (
+            {sortedVoters.map((v, i) => (
               <li key={i} className="flex items-center gap-2">
                 <span className="w-5 h-5 rounded-full bg-pastel-border flex items-center justify-center text-[9px] font-bold text-pastel-mid shrink-0">
                   {v.name.charAt(0).toUpperCase()}

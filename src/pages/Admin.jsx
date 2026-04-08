@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useSSE } from "../hooks/useSSE";
 
@@ -15,16 +15,6 @@ export default function AdminPage() {
   const [pollsError, setPollsError] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null); // pollId pending deletion
 
-  // ── Create form ─────────────────────────────────────────────────────────
-  const [showForm, setShowForm] = useState(false);
-  const [month, setMonth] = useState("");
-  const [newStatus, setNewStatus] = useState("OPEN");
-  const [options, setOptions] = useState([""]);
-  const [creating, setCreating] = useState(false);
-  const [createMessage, setCreateMessage] = useState("");
-  const [focusIndex, setFocusIndex] = useState(null);
-  const inputRefs = useRef([]);
-
   // ── Load polls ──────────────────────────────────────────────────────────
   const loadPolls = useCallback(() => {
     setPollsLoading(true);
@@ -37,13 +27,6 @@ export default function AdminPage() {
 
   useEffect(() => { loadPolls(); }, [loadPolls]);
   useSSE({ "polls-changed": loadPolls });
-
-  useEffect(() => {
-    if (focusIndex !== null && inputRefs.current[focusIndex]) {
-      inputRefs.current[focusIndex].focus();
-      setFocusIndex(null);
-    }
-  }, [focusIndex, options.length]);
 
   // ── Actions ─────────────────────────────────────────────────────────────
   async function cycleStatus(poll) {
@@ -64,44 +47,6 @@ export default function AdminPage() {
     }
   }
 
-  // ── Create form helpers ─────────────────────────────────────────────────
-  function handleOptionChange(index, value) {
-    const next = [...options];
-    next[index] = value;
-    setOptions(next);
-  }
-
-  function addOption() {
-    setOptions([...options, ""]);
-    setFocusIndex(options.length);
-  }
-
-  function removeOption(index) {
-    setOptions(options.filter((_, i) => i !== index));
-  }
-
-  async function handleCreate(e) {
-    e.preventDefault();
-    setCreating(true);
-    setCreateMessage("");
-    const res = await fetch("/api/polls", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ month, status: newStatus, options: options.filter((o) => o.trim()) }),
-    });
-    if (res.ok) {
-      setCreateMessage("Poll created.");
-      setMonth(""); setNewStatus("OPEN"); setOptions([""]); setShowForm(false);
-      loadPolls();
-    } else {
-      const data = await res.json();
-      setCreateMessage("Error: " + data.error);
-    }
-    setCreating(false);
-  }
-
-  const inputClass = "w-full bg-transparent border-b border-pastel-border pb-2.5 text-sm text-pastel-ink placeholder-pastel-muted focus:outline-none focus:border-pastel-gold transition-colors duration-200";
-  const labelClass = "block text-[11px] tracking-[0.4em] uppercase text-pastel-muted mb-3";
 
   return (
     <main className="min-h-screen bg-pastel-bg flex items-start justify-center px-6 py-12">
@@ -114,14 +59,8 @@ export default function AdminPage() {
           <div className="h-px flex-1 bg-pastel-border" />
         </div>
 
-        <div className="flex items-end justify-between mb-10">
+        <div className="mb-10">
           <h1 className="font-display text-5xl font-light text-pastel-ink leading-none">Polls</h1>
-          <button
-            onClick={() => { setShowForm((v) => !v); setCreateMessage(""); }}
-            className="text-[11px] tracking-[0.35em] uppercase text-pastel-gold hover:opacity-70 transition-opacity font-medium"
-          >
-            {showForm ? "− Cancel" : "+ New Poll"}
-          </button>
         </div>
 
         {/* ── Polls monitor ── */}
@@ -167,10 +106,10 @@ export default function AdminPage() {
                     </Link>
                     <button
                       onClick={() => cycleStatus(poll)}
-                      title={`Set to ${STATUS_CYCLE[poll.status]}`}
+                      title={`Set as ${STATUS_CYCLE[poll.status] === "OPEN" ? "Open" : "Closed"}`}
                       className="text-[10px] tracking-[0.25em] uppercase text-pastel-mid border border-pastel-border px-3 py-1.5 hover:border-pastel-gold hover:text-pastel-gold transition-colors"
                     >
-                      → {STATUS_CYCLE[poll.status]}
+                      Set as {STATUS_CYCLE[poll.status] === "OPEN" ? "Open" : "Closed"}
                     </button>
                     <button
                       onClick={() => setConfirmDelete(poll.id)}
@@ -183,70 +122,6 @@ export default function AdminPage() {
               </div>
             ))}
           </div>
-        )}
-
-        {/* ── Create form ── */}
-        {showForm && (
-          <>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="h-px flex-1 bg-pastel-border" />
-              <span className="text-[11px] tracking-[0.4em] uppercase text-pastel-muted">New Poll</span>
-              <div className="h-px flex-1 bg-pastel-border" />
-            </div>
-
-            <form onSubmit={handleCreate} className="flex flex-col gap-9">
-              <div>
-                <label className={labelClass}>Month</label>
-                <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className={inputClass} required />
-              </div>
-
-              <div>
-                <label className={labelClass}>Status</label>
-                <select value={newStatus} onChange={(e) => setNewStatus(e.target.value)} className={`${inputClass} appearance-none cursor-pointer`}>
-                  <option value="OPEN">OPEN</option>
-                  <option value="CLOSED">CLOSED</option>
-                </select>
-              </div>
-
-              <div>
-                <label className={labelClass}>Books</label>
-                <div className="flex flex-col gap-5">
-                  {options.map((opt, index) => (
-                    <div key={index} className="flex items-end gap-3">
-                      <input
-                        type="text"
-                        placeholder={`Book ${index + 1}`}
-                        value={opt}
-                        onChange={(e) => handleOptionChange(index, e.target.value)}
-                        className={`${inputClass} flex-1`}
-                        ref={(el) => (inputRefs.current[index] = el)}
-                        required
-                      />
-                      {options.length > 1 && (
-                        <button type="button" onClick={() => removeOption(index)}
-                          className="text-pastel-muted hover:text-pastel-ink transition-colors pb-2.5 text-lg leading-none shrink-0">×</button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <button type="button" onClick={addOption}
-                  className="mt-5 text-[11px] tracking-[0.4em] uppercase text-pastel-gold hover:opacity-70 font-medium transition-opacity">
-                  + Add book
-                </button>
-              </div>
-
-              <button type="submit" disabled={creating}
-                className="mt-2 py-3.5 bg-pastel-ink text-pastel-card text-[11px] font-semibold tracking-[0.35em] uppercase hover:opacity-80 transition-opacity disabled:opacity-30">
-                {creating ? "Creating…" : "Create Poll"}
-              </button>
-            </form>
-
-            {createMessage && (
-              <p className={`mt-6 text-sm tracking-wide ${createMessage.startsWith("Error") ? "text-red-500" : "text-pastel-mid"}`}>
-                {createMessage}
-              </p>
-            )}
-          </>
         )}
 
         {/* Footer */}
