@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSSE } from "../hooks/useSSE";
 
 export default function PollsPage() {
+  const navigate = useNavigate();
   const [polls, setPolls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,9 +23,20 @@ export default function PollsPage() {
   function loadPolls() {
     setLoading(true);
     setError(null);
-    fetch("/api/polls")
-      .then((r) => { if (!r.ok) throw new Error(`Server error: ${r.status}`); return r.json(); })
-      .then((d) => { setPolls(d); setLoading(false); })
+    fetch("/api/polls", { credentials: "same-origin" })
+      .then((r) => {
+        if (r.status === 401) {
+          navigate("/sign-in", { replace: true });
+          return null;
+        }
+        if (!r.ok) throw new Error(`Server error: ${r.status}`);
+        return r.json();
+      })
+      .then((d) => {
+        if (!d) return;
+        setPolls(d);
+        setLoading(false);
+      })
       .catch((e) => { setError(e.message || "Failed to load polls"); setLoading(false); });
   }
 
@@ -81,8 +93,14 @@ export default function PollsPage() {
     const res = await fetch("/api/polls", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
       body: JSON.stringify({ month, status: "OPEN", options: options.filter((o) => o.trim()) }),
     });
+    if (res.status === 401) {
+      navigate("/sign-in", { replace: true });
+      setCreating(false);
+      return;
+    }
     if (res.ok) {
       setCreateMessage("Poll created.");
       setMonth("");

@@ -1,5 +1,15 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite"
+  "framework": "vite",
+  "routes": [
+    { "src": "^/api/auth/login$", "dest": "/api/auth/login.js" },
+    { "src": "^/api/auth/logout$", "dest": "/api/auth/logout.js" },
+    { "src": "^/api/auth/me$", "dest": "/api/auth/me.js" },
+    { "src": "^/api/polls$", "dest": "/api/polls.js" },
+    { "src": "^/api/polls/([^/]+)$", "dest": "/api/polls/[pollId].js?pollId=$1" },
+    { "src": "^/api/results/([^/]+)$", "dest": "/api/results/[pollId].js?pollId=$1" },
+    { "handle": "filesystem" },
+    { "src": "/.*", "dest": "/index.html" }
+  ]
 }

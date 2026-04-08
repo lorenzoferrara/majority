@@ -95,17 +95,17 @@ export default function Poll() {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState(null);
 
-  const user = JSON.parse(localStorage.getItem("majority_user") ?? "null");
-
   useEffect(() => {
-    if (!user) {
-      navigate("/sign-in");
-      return;
-    }
-
-    fetch(`/api/polls/${pollId}?userId=${encodeURIComponent(user.name)}`)
-      .then((r) => r.json())
+    fetch(`/api/polls/${pollId}`, { credentials: "same-origin" })
+      .then(async (r) => {
+        if (r.status === 401) {
+          navigate("/sign-in", { replace: true });
+          return null;
+        }
+        return r.json();
+      })
       .then((data) => {
+        if (!data) return;
         if (data.error) {
           setError(data.error);
           return;
@@ -125,7 +125,7 @@ export default function Poll() {
       })
       .catch(() => setError("Failed to load poll."))
       .finally(() => setLoading(false));
-  }, [pollId]);
+  }, [navigate, pollId]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 1 } })
@@ -150,11 +150,15 @@ export default function Poll() {
       const res = await fetch(`/api/polls/${pollId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({
-          userId: user.name,
           ranking: ranking.map((o) => o.id),
         }),
       });
+      if (res.status === 401) {
+        navigate("/sign-in", { replace: true });
+        return;
+      }
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Failed to submit ballot.");

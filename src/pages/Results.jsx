@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSSE } from "../hooks/useSSE";
 
 function Medal({ rank }) {
@@ -17,6 +17,7 @@ function Medal({ rank }) {
 
 export default function Results() {
   const { pollId } = useParams();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,8 +25,14 @@ export default function Results() {
   const [viewMode, setViewMode] = useState("irv"); // "irv" | "top2"
 
   function loadResults() {
-    fetch(`/api/results/${pollId}`)
-      .then((r) => r.ok ? r.json() : Promise.reject("Failed to load results"))
+    fetch(`/api/results/${pollId}`, { credentials: "same-origin" })
+      .then((r) => {
+        if (r.status === 401) {
+          navigate("/sign-in", { replace: true });
+          return null;
+        }
+        return r.ok ? r.json() : Promise.reject("Failed to load results");
+      })
       .then(setData)
       .catch((e) => setError(typeof e === "string" ? e : "Failed to load results"))
       .finally(() => setLoading(false));

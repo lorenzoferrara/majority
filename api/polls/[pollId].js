@@ -1,14 +1,17 @@
 const { PrismaClient } = require("@prisma/client");
+const { requireAuth } = require("../../lib/auth");
 
 const prisma = global.prisma ?? new PrismaClient();
 if (process.env.NODE_ENV !== "production") global.prisma = prisma;
 
 module.exports = async function handler(req, res) {
   const pollId = req.query.pollId;
+  const auth = requireAuth(req, res);
+  if (!auth) return;
 
   // ── GET /api/polls/:pollId ──────────────────────────────────────────────
   if (req.method === "GET") {
-    const { userId } = req.query;
+    const userId = auth.name;
 
     try {
       const poll = await prisma.poll.findUnique({
@@ -39,10 +42,11 @@ module.exports = async function handler(req, res) {
 
   // ── POST /api/polls/:pollId — submit ballot ─────────────────────────────
   if (req.method === "POST") {
-    const { userId, ranking } = req.body;
+    const { ranking } = req.body;
+    const userId = auth.name;
 
-    if (!userId || !Array.isArray(ranking) || ranking.length === 0) {
-      return res.status(400).json({ error: "userId and ranking array are required" });
+    if (!Array.isArray(ranking) || ranking.length === 0) {
+      return res.status(400).json({ error: "ranking array is required" });
     }
 
     try {

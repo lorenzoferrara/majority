@@ -1,4 +1,8 @@
 const express = require("express");
+const { getSession } = require("./lib/auth");
+const loginHandler = require("./api/auth/login");
+const logoutHandler = require("./api/auth/logout");
+const meHandler = require("./api/auth/me");
 const pollsHandler = require("./api/polls");
 const pollHandler = require("./api/polls/[pollId]");
 const resultsHandler = require("./api/results/[pollId]");
@@ -21,6 +25,11 @@ app.use((req, _res, next) => { req.broadcast = broadcast; next(); });
 
 // SSE endpoint
 app.get("/api/events", (req, res) => {
+  const session = getSession(req);
+  if (!session) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
@@ -29,6 +38,10 @@ app.get("/api/events", (req, res) => {
   sseClients.add(res);
   req.on("close", () => sseClients.delete(res));
 });
+
+app.post("/api/auth/login", (req, res) => loginHandler(req, res));
+app.post("/api/auth/logout", (req, res) => logoutHandler(req, res));
+app.get("/api/auth/me", (req, res) => meHandler(req, res));
 
 app.all("/api/polls", (req, res) => pollsHandler(req, res));
 app.all("/api/polls/:pollId", (req, res) => {

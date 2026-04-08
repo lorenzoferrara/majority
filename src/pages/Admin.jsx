@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSSE } from "../hooks/useSSE";
 
 const STATUS_CYCLE = { OPEN: "CLOSED", CLOSED: "OPEN" };
@@ -9,6 +9,7 @@ const STATUS_COLORS = {
 };
 
 export default function AdminPage() {
+  const navigate = useNavigate();
   // ── Polls list ──────────────────────────────────────────────────────────
   const [polls, setPolls] = useState([]);
   const [pollsLoading, setPollsLoading] = useState(true);
@@ -19,11 +20,22 @@ export default function AdminPage() {
   const loadPolls = useCallback(() => {
     setPollsLoading(true);
     setPollsError(null);
-    fetch("/api/polls")
-      .then((r) => { if (!r.ok) throw new Error(`Server error: ${r.status}`); return r.json(); })
-      .then((d) => { setPolls(d); setPollsLoading(false); })
+    fetch("/api/polls", { credentials: "same-origin" })
+      .then((r) => {
+        if (r.status === 401) {
+          navigate("/sign-in", { replace: true });
+          return null;
+        }
+        if (!r.ok) throw new Error(`Server error: ${r.status}`);
+        return r.json();
+      })
+      .then((d) => {
+        if (!d) return;
+        setPolls(d);
+        setPollsLoading(false);
+      })
       .catch((e) => { setPollsError(e.message); setPollsLoading(false); });
-  }, []);
+  }, [navigate]);
 
   useEffect(() => { loadPolls(); }, [loadPolls]);
   useSSE({ "polls-changed": loadPolls });
@@ -34,13 +46,22 @@ export default function AdminPage() {
     const res = await fetch(`/api/polls/${poll.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
       body: JSON.stringify({ status: next }),
     });
+    if (res.status === 401) {
+      navigate("/sign-in", { replace: true });
+      return;
+    }
     if (res.ok) setPolls((prev) => prev.map((p) => p.id === poll.id ? { ...p, status: next } : p));
   }
 
   async function deletePoll(id) {
-    const res = await fetch(`/api/polls/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/polls/${id}`, { method: "DELETE", credentials: "same-origin" });
+    if (res.status === 401) {
+      navigate("/sign-in", { replace: true });
+      return;
+    }
     if (res.ok || res.status === 204) {
       setPolls((prev) => prev.filter((p) => p.id !== id));
       setConfirmDelete(null);

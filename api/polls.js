@@ -1,9 +1,13 @@
 const { PrismaClient } = require("@prisma/client");
+const { requireAuth } = require("../lib/auth");
 
 const prisma = global.prisma ?? new PrismaClient();
 if (process.env.NODE_ENV !== "production") global.prisma = prisma;
 
 module.exports = async function handler(req, res) {
+  const auth = requireAuth(req, res);
+  if (!auth) return;
+
   if (req.method === "GET") {
     try {
       const polls = await prisma.poll.findMany({

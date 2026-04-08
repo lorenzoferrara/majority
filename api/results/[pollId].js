@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const { requireAuth } = require("../../lib/auth");
 const prisma = new PrismaClient();
 
 // ── Instant-Runoff Voting (ported from lib/irv.ts) ───────────────────────────
@@ -58,6 +59,9 @@ function runIRV(ballots, options) {
 
 module.exports = async (req, res) => {
   const { pollId } = req.query;
+
+  const auth = requireAuth(req, res);
+  if (!auth) return;
 
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
