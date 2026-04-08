@@ -172,30 +172,12 @@ export default function AdminPage() {
                     >
                       → {STATUS_CYCLE[poll.status]}
                     </button>
-                    {confirmDelete === poll.id ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-pastel-mid">Sure?</span>
-                        <button
-                          onClick={() => deletePoll(poll.id)}
-                          className="text-[10px] tracking-[0.25em] uppercase text-pastel-rose hover:opacity-70 transition-opacity"
-                        >
-                          Yes
-                        </button>
-                        <button
-                          onClick={() => setConfirmDelete(null)}
-                          className="text-[10px] tracking-[0.25em] uppercase text-pastel-muted hover:text-pastel-ink transition-colors"
-                        >
-                          No
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => setConfirmDelete(poll.id)}
-                        className="text-[10px] tracking-[0.25em] uppercase text-pastel-muted hover:text-pastel-rose transition-colors"
-                      >
-                        Delete
-                      </button>
-                    )}
+                    <button
+                      onClick={() => setConfirmDelete(poll.id)}
+                      className="text-[10px] tracking-[0.25em] uppercase text-pastel-muted hover:text-pastel-rose transition-colors"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               </div>
@@ -277,6 +259,38 @@ export default function AdminPage() {
         </p>
 
       </div>
+
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
+          <button
+            type="button"
+            aria-label="Close confirmation"
+            onClick={() => setConfirmDelete(null)}
+            className="absolute inset-0 bg-black/35"
+          />
+          <div className="relative w-full max-w-lg border border-pastel-border bg-pastel-card px-8 py-7 shadow-2xl">
+            <p className="text-[11px] tracking-[0.35em] uppercase text-pastel-rose font-semibold mb-3">Confirm Delete</p>
+            <p className="font-display text-3xl text-pastel-ink leading-tight mb-2">Delete this poll?</p>
+            <p className="text-sm text-pastel-mid mb-7">
+              This action cannot be undone. All ballots and rankings for this poll will be permanently removed.
+            </p>
+            <div className="flex items-center justify-end gap-3">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="text-[10px] tracking-[0.3em] uppercase text-pastel-mid border border-pastel-border px-4 py-2 hover:border-pastel-gold hover:text-pastel-gold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deletePoll(confirmDelete)}
+                className="text-[10px] tracking-[0.3em] uppercase text-pastel-card bg-pastel-rose px-4 py-2 hover:opacity-80 transition-opacity"
+              >
+                Delete Poll
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

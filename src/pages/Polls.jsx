@@ -30,8 +30,18 @@ export default function PollsPage() {
           <div className="h-px flex-1 bg-pastel-border" />
         </div>
 
-        <h1 className="font-display text-5xl font-light text-pastel-ink leading-none mb-3">Monthly Votes</h1>
-        <p className="text-sm text-pastel-mid mb-10 tracking-wide">Read · Rank · Decide</p>
+        <div className="flex items-start justify-between gap-4 mb-10">
+          <div>
+            <h1 className="font-display text-5xl font-light text-pastel-ink leading-none mb-3">Monthly Votes</h1>
+            <p className="text-sm text-pastel-mid tracking-wide">Read · Rank · Decide</p>
+          </div>
+          <Link
+            to="/admin"
+            className="text-[10px] tracking-[0.35em] uppercase text-pastel-mid border border-pastel-border px-4 py-2 hover:border-pastel-gold hover:text-pastel-gold transition-colors duration-200 shrink-0"
+          >
+            Admin
+          </Link>
+        </div>
 
         {loading && (
           <p className="text-[11px] tracking-[0.3em] uppercase text-pastel-muted py-4">Loading…</p>
