@@ -89,6 +89,16 @@ module.exports = async (req, res) => {
     if (b.preferences[0]) firstChoiceCounts[b.preferences[0]]++;
   }
 
+  // Tally top-2 counts (alternative method: each voter's top 2 picks each get a vote)
+  const topTwoCounts = {};
+  for (const id of optionIds) topTwoCounts[id] = 0;
+  for (const b of rawBallots) {
+    const top2 = b.preferences.slice(0, 2);
+    for (const id of top2) {
+      if (topTwoCounts[id] !== undefined) topTwoCounts[id]++;
+    }
+  }
+
   const voters = poll.ballots
     .slice()
     .sort((a, b) => new Date(a.submittedAt) - new Date(b.submittedAt))
@@ -103,6 +113,7 @@ module.exports = async (req, res) => {
     winners: tiedWinners ? tiedWinners.map((id) => optionMap[id]) : [],
     isTie,
     firstChoiceCounts,
+    topTwoCounts,
     rounds: rounds.map((r) => ({
       round: r.round,
       counts: r.counts,

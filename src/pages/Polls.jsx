@@ -78,7 +78,7 @@ export default function PollsPage() {
               ))}
             </div>
             <p className="mt-8 text-[11px] tracking-[0.2em] uppercase text-pastel-muted">
-              {polls.length} vote{polls.length !== 1 ? "s" : ""} available
+              {polls.length} votation{polls.length !== 1 ? "s" : ""} available
             </p>
           </>
         )}

@@ -21,6 +21,7 @@ export default function Results() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [roundsOpen, setRoundsOpen] = useState(false);
+  const [viewMode, setViewMode] = useState("irv"); // "irv" | "top2"
 
   function loadResults() {
     fetch(`/api/results/${pollId}`)
@@ -57,7 +58,7 @@ export default function Results() {
     );
   }
 
-  const { poll, options, totalBallots, voters = [], winner, winners: tiedWinners, isTie, firstChoiceCounts, rounds } = data;
+  const { poll, options, totalBallots, voters = [], winner, winners: tiedWinners, isTie, firstChoiceCounts, topTwoCounts = {}, rounds } = data;
 
   return (
     <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-6 py-12">
@@ -71,10 +72,26 @@ export default function Results() {
           <div className="h-px flex-1 bg-pastel-border" />
         </div>
         <h1 className="font-display text-5xl font-bold text-pastel-ink leading-none mb-1">{poll.month}</h1>
-        <p className="text-xs tracking-[0.4em] uppercase text-pastel-muted mb-10">Results</p>
+        <p className="text-xs tracking-[0.4em] uppercase text-pastel-muted mb-6">Results</p>
+
+        {/* View mode toggle */}
+        <div className="flex items-center gap-1 mb-10 border border-pastel-border bg-[#f4f0ec] p-1 w-fit">
+          <button
+            onClick={() => setViewMode("irv")}
+            className={`text-[10px] tracking-[0.3em] uppercase px-4 py-1.5 font-semibold transition-colors ${viewMode === "irv" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
+          >
+            Ranked choice
+          </button>
+          <button
+            onClick={() => setViewMode("top2")}
+            className={`text-[10px] tracking-[0.3em] uppercase px-4 py-1.5 font-semibold transition-colors ${viewMode === "top2" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
+          >
+            Top 2 picks
+          </button>
+        </div>
 
         {/* Winner */}
-        {poll.status === "CLOSED" && (
+        {poll.status === "CLOSED" && viewMode === "irv" && (
           <div className="mb-10 border-l-4 border-pastel-gold pl-5 py-1">
             {winner ? (
               <>
@@ -94,6 +111,30 @@ export default function Results() {
           </div>
         )}
 
+        {poll.status === "CLOSED" && viewMode === "top2" && (() => {
+          const maxCount = Math.max(0, ...options.map((o) => topTwoCounts[o.id] || 0));
+          const top2Winners = options.filter((o) => (topTwoCounts[o.id] || 0) === maxCount && maxCount > 0);
+          return (
+            <div className="mb-10 border-l-4 border-pastel-gold pl-5 py-1">
+              {top2Winners.length === 1 ? (
+                <>
+                  <p className="text-[11px] tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Winner</p>
+                  <p className="font-display text-3xl font-bold text-pastel-ink">{top2Winners[0].label}</p>
+                </>
+              ) : top2Winners.length > 1 ? (
+                <>
+                  <p className="text-[11px] tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Co-winners</p>
+                  {top2Winners.map((w) => (
+                    <p key={w.id} className="font-display text-3xl font-bold text-pastel-ink">{w.label}</p>
+                  ))}
+                </>
+              ) : (
+                <p className="font-display text-xl italic text-pastel-muted">No winner determined.</p>
+              )}
+            </div>
+          );
+        })()}
+
         {poll.status !== "CLOSED" && (
           <div className="mb-10 py-4 border-t border-pastel-border">
             <p className="text-sm text-pastel-mid italic">Results are published once voting closes.</p>
@@ -102,18 +143,20 @@ export default function Results() {
 
         {/* Vote summary label */}
         <div className="flex items-center justify-between text-[10px] tracking-[0.3em] uppercase text-pastel-muted mb-3">
-          <span>First-choice votes</span>
+          <span>{viewMode === "irv" ? "First-choice votes" : "Top-2 pick appearances"}</span>
           <span>{totalBallots} ballot{totalBallots !== 1 ? "s" : ""}</span>
         </div>
 
         {/* Bars */}
         {(() => {
-          const sorted = options.slice().sort((a, b) => (firstChoiceCounts[b.id] || 0) - (firstChoiceCounts[a.id] || 0));
+          const counts = viewMode === "irv" ? firstChoiceCounts : topTwoCounts;
+          const totalForPct = viewMode === "irv" ? totalBallots : options.reduce((s, o) => s + (topTwoCounts[o.id] || 0), 0);
+          const sorted = options.slice().sort((a, b) => (counts[b.id] || 0) - (counts[a.id] || 0));
           // dense rank: ties share the same rank
           let rank = 1;
           const ranks = {};
           for (let i = 0; i < sorted.length; i++) {
-            if (i > 0 && (firstChoiceCounts[sorted[i].id] || 0) < (firstChoiceCounts[sorted[i - 1].id] || 0)) {
+            if (i > 0 && (counts[sorted[i].id] || 0) < (counts[sorted[i - 1].id] || 0)) {
               rank = i + 1;
             }
             ranks[sorted[i].id] = rank;
@@ -121,8 +164,8 @@ export default function Results() {
           return (
             <div className="flex flex-col gap-1.5 mb-8">
               {sorted.map((option) => {
-                const count = firstChoiceCounts[option.id] || 0;
-                const pct = totalBallots > 0 ? Math.round((count / totalBallots) * 100) : 0;
+                const count = counts[option.id] || 0;
+                const pct = totalForPct > 0 ? Math.round((count / totalForPct) * 100) : 0;
                 const r = ranks[option.id];
                 const isTop = r === 1;
                 return (
@@ -149,8 +192,15 @@ export default function Results() {
           );
         })()}
 
+        {/* Top-2 method explanation */}
+        {viewMode === "top2" && (
+          <p className="text-[11px] text-pastel-muted mb-8 leading-relaxed">
+            Each voter's first and second choices each count as one vote. The book with the most appearances in top-2 picks wins.
+          </p>
+        )}
+
         {/* Step-by-step IRV elimination */}
-        {rounds.length > 0 && (
+        {viewMode === "irv" && rounds.length > 0 && (
           <div className="mb-8">
             <button
               onClick={() => setRoundsOpen((v) => !v)}
