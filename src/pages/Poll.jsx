@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   DndContext,
@@ -94,6 +94,7 @@ export default function Poll() {
   const [submitted, setSubmitted] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState(null);
+  const confirmSectionRef = useRef(null);
 
   useEffect(() => {
     fetch(`/api/polls/${pollId}`, { credentials: "same-origin" })
@@ -126,6 +127,11 @@ export default function Poll() {
       .catch(() => setError("Failed to load poll."))
       .finally(() => setLoading(false));
   }, [navigate, pollId]);
+
+  useEffect(() => {
+    if (!confirming) return;
+    confirmSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [confirming]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 1 } })
@@ -259,7 +265,7 @@ export default function Poll() {
             )}
 
             {confirming && !submitted && (
-              <div className="mt-10 pt-8 border-t border-pastel-border">
+              <div ref={confirmSectionRef} className="mt-10 pt-8 border-t border-pastel-border">
                 <p className="font-display text-2xl font-semibold text-pastel-ink mb-1">Are you sure?</p>
                 <p className="text-sm font-medium text-pastel-mid mb-7">Your ballot cannot be changed after submission.</p>
                 <div className="flex gap-5">
