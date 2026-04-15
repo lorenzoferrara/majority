@@ -73,6 +73,14 @@ export default function Results() {
       <div className="relative w-full max-w-2xl">
       <div className="border border-pastel-border bg-pastel-card px-16 py-14">
 
+        <Link
+          to="/polls"
+          aria-label="Back to all polls"
+          className="inline-flex items-center justify-center w-10 h-10 border border-pastel-border bg-[#f4f0ec] text-pastel-ink hover:bg-pastel-gold hover:text-pastel-ink transition-colors mb-8"
+        >
+          <span aria-hidden="true" className="text-xl leading-none">←</span>
+        </Link>
+
         {/* Header */}
         <div className="flex items-center gap-3 mb-10">
           <div className="h-px flex-1 bg-pastel-border" />

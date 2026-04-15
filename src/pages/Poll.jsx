@@ -206,6 +206,14 @@ export default function Poll() {
     <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-2xl border border-pastel-border bg-pastel-card px-16 py-14">
 
+        <Link
+          to="/polls"
+          aria-label="Back to all polls"
+          className="inline-flex items-center justify-center w-10 h-10 border border-pastel-border bg-[#f4f0ec] text-pastel-ink hover:bg-pastel-gold hover:text-pastel-ink transition-colors mb-8"
+        >
+          <span aria-hidden="true" className="text-xl leading-none">←</span>
+        </Link>
+
         <header className="mb-14">
           <p className="text-xs tracking-[0.5em] uppercase text-pastel-gold font-semibold mb-5">Your Ballot</p>
           <h1 className="font-display text-5xl font-bold text-pastel-ink leading-none">{poll.month}</h1>
