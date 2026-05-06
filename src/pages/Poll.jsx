@@ -60,7 +60,7 @@ function SortableOption({ option, index }) {
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      style={{ transform: CSS.Transform.toString(transform), transition: isDragging ? "none" : transition, touchAction: 'none' }}
       className={`flex items-center gap-3 px-4 py-3 bg-[#f4f4f2] cursor-grab select-none transition-all duration-150 border-l-2 ${accent.bar.replace('bg-', 'border-')} ${
         isDragging ? "opacity-50 shadow-lg" : "hover:bg-[#eeeeeb]"
       }`}
@@ -136,7 +136,7 @@ export default function Poll() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 1 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 10 } })
   );
 
   function handleDragEnd(event) {

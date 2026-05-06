@@ -20,6 +20,18 @@ export default function PollsPage() {
 
   useSSE({ "polls-changed": loadPolls });
 
+  function formatMonth(monthStr) {
+    if (monthStr.includes('Demo')) {
+      const parts = monthStr.split(' – ');
+      if (parts.length === 2) {
+        const date = new Date(parts[1] + '-01');
+        return `Demo – ${date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}`;
+      }
+    }
+    const date = new Date(monthStr + '-01');
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  }
+
   function loadPolls() {
     setLoading(true);
     setError(null);
@@ -205,7 +217,7 @@ export default function PollsPage() {
                 >
                   <div className="min-w-0">
                     <p className="font-display text-2xl text-pastel-ink group-hover:text-pastel-gold transition-colors duration-200 leading-snug">
-                      {poll.month}
+                      {formatMonth(poll.month)}
                     </p>
                     <span className={`text-[9px] tracking-[0.15em] uppercase font-medium mt-1 inline-block ${
                       poll.status === "OPEN" ? "text-pastel-sage"
