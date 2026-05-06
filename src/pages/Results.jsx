@@ -346,7 +346,7 @@ export default function Results() {
             </Link>
           )}
           <Link to="/polls" className="text-pastel-mid hover:text-pastel-ink transition-colors font-semibold">
-            All polls
+            Back to polls
           </Link>
         </div>
 
