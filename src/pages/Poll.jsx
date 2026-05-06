@@ -97,6 +97,18 @@ export default function Poll() {
   const [error, setError] = useState(null);
   const confirmSectionRef = useRef(null);
 
+  function formatMonth(monthStr) {
+    if (monthStr.includes('Demo')) {
+      const parts = monthStr.split(' – ');
+      if (parts.length === 2) {
+        const date = new Date(parts[1] + '-01');
+        return `Demo – ${date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}`;
+      }
+    }
+    const date = new Date(monthStr + '-01');
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  }
+
   useEffect(() => {
     fetch(`/api/polls/${pollId}`, { credentials: "same-origin" })
       .then(async (r) => {
@@ -218,7 +230,7 @@ export default function Poll() {
 
         <header className="mb-14">
           <p className="text-xs tracking-[0.5em] uppercase text-pastel-gold font-semibold mb-5">Your Ballot</p>
-          <h1 className="font-display text-5xl font-bold text-pastel-ink leading-none">{poll.month}</h1>
+          <h1 className="font-display text-5xl font-bold text-pastel-ink leading-none">{formatMonth(poll.month)}</h1>
           <p className="text-xs tracking-[0.25em] uppercase text-pastel-mid font-medium mt-4">Drag to rank · Submit when ready</p>
         </header>
 

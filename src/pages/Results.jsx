@@ -24,6 +24,18 @@ export default function Results() {
   const [roundsOpen, setRoundsOpen] = useState(false);
   const [viewMode, setViewMode] = useState("irv"); // "irv" | "top2"
 
+  function formatMonth(monthStr) {
+    if (monthStr.includes('Demo')) {
+      const parts = monthStr.split(' – ');
+      if (parts.length === 2) {
+        const date = new Date(parts[1] + '-01');
+        return `Demo – ${date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}`;
+      }
+    }
+    const date = new Date(monthStr + '-01');
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  }
+
   function loadResults() {
     fetch(`/api/results/${pollId}`, { credentials: "same-origin" })
       .then((r) => {
@@ -87,7 +99,7 @@ export default function Results() {
           <span className="text-[11px] tracking-[0.5em] uppercase text-pastel-gold font-medium">Book Club</span>
           <div className="h-px flex-1 bg-pastel-border" />
         </div>
-        <h1 className="font-display text-5xl font-bold text-pastel-ink leading-none mb-1">{poll.month}</h1>
+        <h1 className="font-display text-5xl font-bold text-pastel-ink leading-none mb-1">{formatMonth(poll.month)}</h1>
         <p className="text-xs tracking-[0.4em] uppercase text-pastel-muted mb-6">Results</p>
 
         {/* View mode toggle */}
