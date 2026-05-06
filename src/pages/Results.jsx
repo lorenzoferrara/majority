@@ -159,23 +159,49 @@ export default function Results() {
 
         {/* Vote summary label */}
         <div className="flex items-center justify-between text-[10px] tracking-[0.3em] uppercase text-pastel-muted mb-3">
-          <span>{viewMode === "irv" ? "First-choice votes" : "Top-2 pick appearances"}</span>
+          <span>{viewMode === "irv" ? "Elimination round" : "Top-2 pick appearances"}</span>
           <span>{totalBallots} ballot{totalBallots !== 1 ? "s" : ""}</span>
         </div>
 
         {/* Bars */}
         {(() => {
-          const counts = viewMode === "irv" ? firstChoiceCounts : topTwoCounts;
+          const counts = viewMode === "irv" ? (rounds.length > 0 ? rounds[rounds.length - 1].counts : firstChoiceCounts) : topTwoCounts;
           const totalForPct = viewMode === "irv" ? totalBallots : options.reduce((s, o) => s + (topTwoCounts[o.id] || 0), 0);
-          const sorted = options.slice().sort((a, b) => (counts[b.id] || 0) - (counts[a.id] || 0));
-          // dense rank: ties share the same rank
-          let rank = 1;
-          const ranks = {};
-          for (let i = 0; i < sorted.length; i++) {
-            if (i > 0 && (counts[sorted[i].id] || 0) < (counts[sorted[i - 1].id] || 0)) {
-              rank = i + 1;
+          let sorted;
+          if (viewMode === "irv" && rounds.length > 0) {
+            // Custom order: winners first, then eliminated in reverse order of elimination
+            const eliminatedOrder = [];
+            for (const r of rounds) {
+              if (r.eliminated) eliminatedOrder.push(...r.eliminated);
             }
-            ranks[sorted[i].id] = rank;
+            const reversedEliminated = eliminatedOrder.reverse();
+            const winnerList = winner ? [winner] : tiedWinners || [];
+            const customOrder = [...winnerList, ...reversedEliminated];
+            sorted = options.slice().sort((a, b) => {
+              const aIndex = customOrder.findIndex(o => o.id === a.id);
+              const bIndex = customOrder.findIndex(o => o.id === b.id);
+              return aIndex - bIndex;
+            });
+          } else {
+            sorted = options.slice().sort((a, b) => (counts[b.id] || 0) - (counts[a.id] || 0));
+          }
+          // dense rank: ties share the same rank
+          const ranks = {};
+          if (viewMode === "irv" && rounds.length > 0) {
+            // For IRV, rank based on elimination order: winners rank 1, then eliminated by reverse order
+            const winnerList = winner ? [winner] : tiedWinners || [];
+            const winnerCount = winnerList.length;
+            for (let i = 0; i < sorted.length; i++) {
+              ranks[sorted[i].id] = i < winnerCount ? 1 : 2 + (i - winnerCount);
+            }
+          } else {
+            let rank = 1;
+            for (let i = 0; i < sorted.length; i++) {
+              if (i > 0 && (counts[sorted[i].id] || 0) < (counts[sorted[i - 1].id] || 0)) {
+                rank = i + 1;
+              }
+              ranks[sorted[i].id] = rank;
+            }
           }
           return (
             <div className="flex flex-col gap-1.5 mb-8">
@@ -184,6 +210,15 @@ export default function Results() {
                 const pct = totalForPct > 0 ? Math.round((count / totalForPct) * 100) : 0;
                 const r = ranks[option.id];
                 const isTop = r === 1;
+                // For IRV, show elimination round instead of votes
+                let displayText = `${count} (${pct}%)`;
+                let barPct = pct;
+                if (viewMode === "irv" && rounds.length > 0) {
+                  const elimRoundIndex = rounds.findIndex(r => r.eliminated?.some(e => e.id === option.id));
+                  const roundNum = elimRoundIndex === -1 ? rounds.length : elimRoundIndex + 1;
+                  displayText = roundNum === rounds.length ? "Winner" : `Eliminated Round ${roundNum}`;
+                  barPct = (roundNum / rounds.length) * 100;
+                }
                 return (
                   <div key={option.id} className={`px-3 py-2.5 border flex items-center gap-3 ${isTop ? "border-pastel-gold bg-amber-50" : "border-pastel-border bg-[#f4f0ec]"}`}>
                     <Medal rank={r} />
@@ -192,12 +227,12 @@ export default function Results() {
                         <span className={`font-display text-base font-semibold ${isTop ? "text-pastel-ink" : "text-pastel-mid"}`}>
                           {option.label}
                         </span>
-                        <span className="text-pastel-muted text-[11px] tabular-nums ml-4 shrink-0">{count} ({pct}%)</span>
+                        <span className="text-pastel-muted text-[11px] tabular-nums ml-4 shrink-0">{displayText}</span>
                       </div>
                       <div className="h-1 bg-pastel-border w-full rounded-full overflow-hidden">
                         <div
                           className={`h-1 rounded-full transition-all duration-700 ${isTop ? "bg-pastel-gold" : "bg-pastel-muted"}`}
-                          style={{ width: `${pct}%` }}
+                          style={{ width: `${barPct}%` }}
                         />
                       </div>
                     </div>

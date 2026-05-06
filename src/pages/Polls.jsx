@@ -114,6 +114,15 @@ export default function PollsPage() {
     setCreating(false);
   }
 
+  async function handleLogout() {
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
+    } catch {
+      // Ignore network errors and still redirect to sign in.
+    }
+    navigate("/sign-in", { replace: true });
+  }
+
   const inputClass = "w-full bg-transparent border-b border-pastel-border pb-2.5 text-sm text-pastel-ink placeholder-pastel-muted focus:outline-none focus:border-pastel-gold transition-colors duration-200";
   const labelClass = "block text-[11px] tracking-[0.4em] uppercase text-pastel-muted mb-3";
 
@@ -145,6 +154,13 @@ export default function PollsPage() {
               className="text-[10px] tracking-[0.35em] uppercase text-pastel-gold hover:opacity-70 transition-opacity font-medium"
             >
               {showForm ? "− Cancel" : "+ New Poll"}
+            </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="text-[10px] tracking-[0.35em] uppercase text-pastel-mid border border-pastel-border px-4 py-2 hover:border-pastel-gold hover:text-pastel-gold transition-colors duration-200"
+            >
+              Logout
             </button>
             {showAdmin && (
               <Link

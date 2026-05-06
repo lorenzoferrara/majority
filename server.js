@@ -1,3 +1,5 @@
+require("dotenv").config({ path: ".env.local" });
+
 const express = require("express");
 const { getSession } = require("./lib/auth");
 const loginHandler = require("./api/auth/login");
