@@ -20,6 +20,18 @@ export default function PollsPage() {
 
   useSSE({ "polls-changed": loadPolls });
 
+  function formatMonth(monthStr) {
+    if (monthStr.includes('Demo')) {
+      const parts = monthStr.split(' – ');
+      if (parts.length === 2) {
+        const date = new Date(parts[1] + '-01');
+        return `Demo – ${date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}`;
+      }
+    }
+    const date = new Date(monthStr + '-01');
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  }
+
   function loadPolls() {
     setLoading(true);
     setError(null);
@@ -114,6 +126,15 @@ export default function PollsPage() {
     setCreating(false);
   }
 
+  async function handleLogout() {
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
+    } catch {
+      // Ignore network errors and still redirect to sign in.
+    }
+    navigate("/sign-in", { replace: true });
+  }
+
   const inputClass = "w-full bg-transparent border-b border-pastel-border pb-2.5 text-sm text-pastel-ink placeholder-pastel-muted focus:outline-none focus:border-pastel-gold transition-colors duration-200";
   const labelClass = "block text-[11px] tracking-[0.4em] uppercase text-pastel-muted mb-3";
 
@@ -145,6 +166,13 @@ export default function PollsPage() {
               className="text-[10px] tracking-[0.35em] uppercase text-pastel-gold hover:opacity-70 transition-opacity font-medium"
             >
               {showForm ? "− Cancel" : "+ New Poll"}
+            </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="text-[10px] tracking-[0.35em] uppercase text-pastel-mid border border-pastel-border px-4 py-2 hover:border-pastel-gold hover:text-pastel-gold transition-colors duration-200"
+            >
+              Logout
             </button>
             {showAdmin && (
               <Link
@@ -189,7 +217,7 @@ export default function PollsPage() {
                 >
                   <div className="min-w-0">
                     <p className="font-display text-2xl text-pastel-ink group-hover:text-pastel-gold transition-colors duration-200 leading-snug">
-                      {poll.month}
+                      {formatMonth(poll.month)}
                     </p>
                     <span className={`text-[9px] tracking-[0.15em] uppercase font-medium mt-1 inline-block ${
                       poll.status === "OPEN" ? "text-pastel-sage"

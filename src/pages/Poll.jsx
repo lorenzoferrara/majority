@@ -4,6 +4,7 @@ import {
   DndContext,
   closestCenter,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -203,7 +204,8 @@ export default function Poll() {
   }, [confirming]);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 1 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 1 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 10 } })
   );
 
   useEffect(() => () => {
@@ -398,7 +400,7 @@ export default function Poll() {
 
         <header className="mb-14">
           <p className="text-xs tracking-[0.5em] uppercase text-pastel-gold font-semibold mb-5">Your Ballot</p>
-          <h1 className="font-display text-5xl font-bold text-pastel-ink leading-none">{poll.month}</h1>
+          <h1 className="font-display text-5xl font-bold text-pastel-ink leading-none">{formatMonth(poll.month)}</h1>
           <p className="text-xs tracking-[0.25em] uppercase text-pastel-mid font-medium mt-4">Drag to rank · Submit when ready</p>
         </header>
 

@@ -16,6 +16,18 @@ export default function AdminPage() {
   const [pollsError, setPollsError] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null); // pollId pending deletion
 
+  function formatMonth(monthStr) {
+    if (monthStr.includes('Demo')) {
+      const parts = monthStr.split(' – ');
+      if (parts.length === 2) {
+        const date = new Date(parts[1] + '-01');
+        return `Demo – ${date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}`;
+      }
+    }
+    const date = new Date(monthStr + '-01');
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  }
+
   // ── Load polls ──────────────────────────────────────────────────────────
   const loadPolls = useCallback(() => {
     setPollsLoading(true);
@@ -105,7 +117,7 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between gap-4">
                   {/* Left: month + meta */}
                   <div className="min-w-0">
-                    <p className="font-display text-xl text-pastel-ink leading-snug">{poll.month}</p>
+                    <p className="font-display text-xl text-pastel-ink leading-snug">{formatMonth(poll.month)}</p>
                     <div className="flex items-center gap-3 mt-1">
                       <span className={`text-[10px] tracking-[0.2em] uppercase font-medium ${STATUS_COLORS[poll.status]}`}>
                         {poll.status}
