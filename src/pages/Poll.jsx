@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   DndContext,
@@ -14,6 +14,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+
+const BOOK_MOVE_DURATION_MS = 1400;
 
 const rankAccent = (i) => [
   { bar: "bg-pastel-gold",  num: "text-pastel-gold",  row: "hover:bg-amber-50" },
@@ -49,36 +51,96 @@ function RankBadge({ index }) {
   );
 }
 
-function SortableOption({ option, index }) {
+function SortableOption({
+  option,
+  index,
+  onBookClaim,
+  onUndoBookClaim,
+  isBookClaimed,
+  movingOffset,
+  isListAnimating,
+  registerOptionNode,
+}) {
+  const isLocked = isBookClaimed;
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: option.id });
+    useSortable({ id: option.id, disabled: isLocked });
 
-  const style = { transform: CSS.Transform.toString(transform), transition: isDragging ? "none" : transition };
+  const combinedTransform = {
+    x: transform?.x ?? 0,
+    y: (transform?.y ?? 0) + movingOffset,
+    scaleX: transform?.scaleX ?? 1,
+    scaleY: transform?.scaleY ?? 1,
+  };
+
+  const style = {
+    transform: CSS.Transform.toString(combinedTransform),
+    transition: isDragging
+      ? "none"
+      : movingOffset !== 0 && !isListAnimating
+        ? "none"
+        : isListAnimating
+        ? `transform ${BOOK_MOVE_DURATION_MS}ms cubic-bezier(0.16, 1, 0.3, 1)`
+        : transition,
+  };
   const accent = rankAccent(index);
+
+  const handleNodeRef = (node) => {
+    setNodeRef(node);
+    registerOptionNode(option.id, node);
+  };
 
   return (
     <div
-      ref={setNodeRef}
+      ref={handleNodeRef}
       style={style}
-      className={`flex items-center gap-3 px-4 py-3 bg-[#f4f4f2] cursor-grab select-none transition-all duration-150 border-l-2 ${accent.bar.replace('bg-', 'border-')} ${
-        isDragging ? "opacity-50 shadow-lg" : "hover:bg-[#eeeeeb]"
+      className={`flex items-center gap-3 px-4 py-3 ${isLocked ? "bg-[#ababa6] text-white" : "bg-[#f4f4f2]"} ${isLocked ? "cursor-default" : "cursor-grab"} select-none transition-all duration-150 border-l-2 ${accent.bar.replace('bg-', 'border-')} ${
+        isDragging ? "opacity-50 shadow-lg" : isLocked ? "" : "hover:bg-[#eeeeeb]"
       }`}
       {...attributes}
-      {...listeners}
+      {...(isLocked ? undefined : listeners)}
     >
       {/* rank badge */}
       <RankBadge index={index} />
 
       {/* label */}
       <div className="flex-1 min-w-0">
-        <p className="font-display text-lg text-pastel-ink leading-snug font-semibold">{option.label}</p>
+        <p className={`font-display text-lg leading-snug font-semibold ${isLocked ? "text-white" : "text-pastel-ink"}`}>{option.label}</p>
         {option.description && (
-          <p className="text-pastel-mid text-sm mt-0.5 truncate">{option.description}</p>
+          <p className={`text-sm mt-0.5 truncate ${isLocked ? "text-[#f4f3ef]" : "text-pastel-mid"}`}>{option.description}</p>
         )}
       </div>
 
       {/* drag handle */}
-      <span className="text-pastel-mid text-base shrink-0 select-none">⠿</span>
+      <div className="flex items-center gap-3 shrink-0">
+        {isBookClaimed ? (
+          <button
+            type="button"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => {
+              event.stopPropagation();
+              onUndoBookClaim(option.id);
+            }}
+            className="px-2 py-1 border border-[#f1efe7] text-[9px] leading-tight tracking-[0.18em] font-bold text-[#f8f7f2] uppercase hover:bg-[#9f9f99] transition-colors"
+          >
+            Undo
+          </button>
+        ) : (
+          <button
+            type="button"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => {
+              event.stopPropagation();
+              onBookClaim(option.id);
+            }}
+            className="px-2 py-1 text-[9px] leading-tight tracking-[0.18em] font-bold uppercase text-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ backgroundColor: "#ccdabc", color: "#35533a" }}
+          >
+            <span className="block">This Is</span>
+            <span className="block">My Book</span>
+          </button>
+        )}
+        <span className={`text-base shrink-0 select-none ${isLocked ? "text-[#efede6]" : "text-pastel-mid"}`}>⠿</span>
+      </div>
     </div>
   );
 }
@@ -94,7 +156,14 @@ export default function Poll() {
   const [submitted, setSubmitted] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState(null);
+  const [bookClaims, setBookClaims] = useState({});
+  const [rowAnimationOffsets, setRowAnimationOffsets] = useState({});
+  const [isListAnimating, setIsListAnimating] = useState(false);
   const confirmSectionRef = useRef(null);
+  const optionNodesRef = useRef(new Map());
+  const pendingPositionsRef = useRef(null);
+  const animationFrameRef = useRef([]);
+  const animationTimeoutRef = useRef(null);
 
   useEffect(() => {
     fetch(`/api/polls/${pollId}`, { credentials: "same-origin" })
@@ -137,15 +206,128 @@ export default function Poll() {
     useSensor(PointerSensor, { activationConstraint: { distance: 1 } })
   );
 
+  useEffect(() => () => {
+    animationFrameRef.current.forEach((frameId) => window.cancelAnimationFrame(frameId));
+    if (animationTimeoutRef.current) {
+      window.clearTimeout(animationTimeoutRef.current);
+    }
+  }, []);
+
+  function registerOptionNode(optionId, node) {
+    if (node) {
+      optionNodesRef.current.set(optionId, node);
+      return;
+    }
+
+    optionNodesRef.current.delete(optionId);
+  }
+
+  function animateRankingChange(nextRanking) {
+    pendingPositionsRef.current = new Map(
+      ranking.map((item) => [item.id, optionNodesRef.current.get(item.id)?.getBoundingClientRect().top])
+    );
+    setRanking(nextRanking);
+  }
+
+  useLayoutEffect(() => {
+    if (!pendingPositionsRef.current) {
+      return undefined;
+    }
+
+    const previousPositions = pendingPositionsRef.current;
+    pendingPositionsRef.current = null;
+
+    const nextOffsets = {};
+    for (const item of ranking) {
+      const previousTop = previousPositions.get(item.id);
+      const node = optionNodesRef.current.get(item.id);
+      if (previousTop == null || !node) {
+        continue;
+      }
+
+      const delta = previousTop - node.getBoundingClientRect().top;
+      if (Math.abs(delta) > 1) {
+        nextOffsets[item.id] = delta;
+      }
+    }
+
+    animationFrameRef.current.forEach((frameId) => window.cancelAnimationFrame(frameId));
+    animationFrameRef.current = [];
+    if (animationTimeoutRef.current) {
+      window.clearTimeout(animationTimeoutRef.current);
+      animationTimeoutRef.current = null;
+    }
+
+    if (Object.keys(nextOffsets).length === 0) {
+      setRowAnimationOffsets({});
+      setIsListAnimating(false);
+      return undefined;
+    }
+
+    setIsListAnimating(false);
+    setRowAnimationOffsets(nextOffsets);
+
+    const frameOne = window.requestAnimationFrame(() => {
+      const frameTwo = window.requestAnimationFrame(() => {
+        setIsListAnimating(true);
+        setRowAnimationOffsets({});
+        animationTimeoutRef.current = window.setTimeout(() => {
+          setIsListAnimating(false);
+          animationTimeoutRef.current = null;
+        }, BOOK_MOVE_DURATION_MS);
+      });
+      animationFrameRef.current = [frameTwo];
+    });
+
+    animationFrameRef.current = [frameOne];
+
+    return undefined;
+  }, [ranking]);
+
   function handleDragEnd(event) {
     const { active, over } = event;
     if (over && active.id !== over.id) {
+      setIsListAnimating(false);
+      setRowAnimationOffsets({});
       setRanking((items) => {
         const oldIndex = items.findIndex((i) => i.id === active.id);
         const newIndex = items.findIndex((i) => i.id === over.id);
         return arrayMove(items, oldIndex, newIndex);
       });
     }
+  }
+
+  function handleBookClaim(optionId) {
+    const currentIndex = ranking.findIndex((item) => item.id === optionId);
+    if (currentIndex === -1 || currentIndex === ranking.length - 1) {
+      return;
+    }
+
+    setBookClaims((currentClaims) => ({
+      ...currentClaims,
+      [optionId]: { previousIndex: currentIndex },
+    }));
+    animateRankingChange(arrayMove(ranking, currentIndex, ranking.length - 1));
+  }
+
+  function handleUndoBookClaim(optionId) {
+    const claim = bookClaims[optionId];
+    if (!claim) {
+      return;
+    }
+
+    const currentIndex = ranking.findIndex((item) => item.id === optionId);
+    if (currentIndex === -1) {
+      return;
+    }
+
+    const targetIndex = Math.min(claim.previousIndex, ranking.length - 1);
+    setBookClaims((currentClaims) => {
+      const nextClaims = { ...currentClaims };
+      delete nextClaims[optionId];
+      return nextClaims;
+    });
+    animateRankingChange(arrayMove(ranking, currentIndex, targetIndex));
   }
 
   async function handleSubmit() {
@@ -265,7 +447,17 @@ export default function Poll() {
                 <SortableContext items={ranking.map((o) => o.id)} strategy={verticalListSortingStrategy}>
                   <div className="flex flex-col gap-2">
                     {ranking.map((option, index) => (
-                      <SortableOption key={option.id} option={option} index={index} />
+                      <SortableOption
+                        key={option.id}
+                        option={option}
+                        index={index}
+                        onBookClaim={handleBookClaim}
+                        onUndoBookClaim={handleUndoBookClaim}
+                        isBookClaimed={Boolean(bookClaims[option.id])}
+                        movingOffset={rowAnimationOffsets[option.id] ?? 0}
+                        isListAnimating={isListAnimating}
+                        registerOptionNode={registerOptionNode}
+                      />
                     ))}
                   </div>
                 </SortableContext>
