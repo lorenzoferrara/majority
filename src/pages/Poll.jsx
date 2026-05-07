@@ -150,6 +150,18 @@ export default function Poll() {
   const { pollId } = useParams();
   const navigate = useNavigate();
 
+  function formatMonth(monthStr) {
+    if (monthStr.includes('Demo')) {
+      const parts = monthStr.split(' – ');
+      if (parts.length === 2) {
+        const date = new Date(parts[1] + '-01');
+        return `Demo – ${date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}`;
+      }
+    }
+    const date = new Date(monthStr + '-01');
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  }
+
   const [poll, setPoll] = useState(null);
   const [ranking, setRanking] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -167,20 +179,35 @@ export default function Poll() {
   const animationTimeoutRef = useRef(null);
 
   useEffect(() => {
-    fetch(`/api/polls/${pollId}`, { credentials: "same-origin" })
-      .then(async (r) => {
+    const loadPoll = async () => {
+      try {
+        const r = await fetch(`/api/polls/${pollId}`, { credentials: "same-origin" });
+        
         if (r.status === 401) {
           navigate("/sign-in", { replace: true });
-          return null;
-        }
-        return r.json();
-      })
-      .then((data) => {
-        if (!data) return;
-        if (data.error) {
-          setError(data.error);
           return;
         }
+        
+        if (!r.ok) {
+          setError(`Failed to load poll: ${r.status}`);
+          setLoading(false);
+          return;
+        }
+
+        const data = await r.json();
+        
+        if (!data) {
+          setError("No data received");
+          setLoading(false);
+          return;
+        }
+        
+        if (data.error) {
+          setError(data.error);
+          setLoading(false);
+          return;
+        }
+        
         setPoll(data);
 
         // If user already voted, restore their previous ranking order
@@ -193,9 +220,16 @@ export default function Poll() {
         } else {
           setRanking(data.options);
         }
-      })
-      .catch(() => setError("Failed to load poll."))
-      .finally(() => setLoading(false));
+        
+        setLoading(false);
+      } catch (err) {
+        console.error("Poll load error:", err);
+        setError("Failed to load poll: " + err.message);
+        setLoading(false);
+      }
+    };
+    
+    loadPoll();
   }, [navigate, pollId]);
 
   useEffect(() => {
@@ -376,11 +410,17 @@ export default function Poll() {
     );
   }
 
-  if (error && !poll) {
+  if (!poll) {
     return (
       <main className={cardClass}>
         <div className={innerClass}>
-          <p className="font-display text-xl text-pastel-mid">{error}</p>
+          <p className="font-display text-2xl italic text-pastel-mid">{error || "Could not load poll"}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-6 text-xs tracking-[0.35em] uppercase font-semibold text-pastel-mid hover:text-pastel-ink transition-colors"
+          >
+            Retry
+          </button>
         </div>
       </main>
     );
