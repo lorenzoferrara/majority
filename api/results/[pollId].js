@@ -106,13 +106,14 @@ module.exports = async (req, res) => {
   const voters = poll.ballots
     .slice()
     .sort((a, b) => new Date(a.submittedAt) - new Date(b.submittedAt))
-    .map((b) => ({ name: b.userId, submittedAt: b.submittedAt }));
+    .map((b) => ({ name: b.userId, submittedAt: b.submittedAt, ranking: b.choices.map((c) => c.optionId) }));
 
   return res.status(200).json({
     poll: { id: poll.id, month: poll.month, status: poll.status },
     options: poll.options,
     totalBallots: poll.ballots.length,
     voters,
+    allVoterRankings: rawBallots.map((b) => b.preferences),
     winner: winner ? optionMap[winner] : null,
     winners: tiedWinners ? tiedWinners.map((id) => optionMap[id]) : [],
     isTie,

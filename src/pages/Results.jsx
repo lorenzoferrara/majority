@@ -22,7 +22,10 @@ export default function Results() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [roundsOpen, setRoundsOpen] = useState(false);
-  const [viewMode, setViewMode] = useState("irv"); // "irv" | "top2"
+  const [viewMode, setViewMode] = useState("irv"); // "irv" | "topN" | "exponential"
+  const [topN, setTopN] = useState(2);
+  const [decayFactor, setDecayFactor] = useState(1.4);
+  const [showExponentialInfo, setShowExponentialInfo] = useState(false);
 
   function formatMonth(monthStr) {
     if (monthStr.includes('Demo')) {
@@ -77,8 +80,101 @@ export default function Results() {
     );
   }
 
-  const { poll, options, totalBallots, voters = [], winner, winners: tiedWinners, isTie, firstChoiceCounts, topTwoCounts = {}, rounds } = data;
+  const { poll, options, totalBallots, voters = [], winner, winners: tiedWinners, isTie, firstChoiceCounts, topTwoCounts = {}, rounds, allVoterRankings = [] } = data;
   const sortedVoters = [...voters].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+
+  // Calculate top-N counts from all voter rankings
+  const calculateTopNCounts = (n) => {
+    const counts = {};
+    for (const option of options) {
+      counts[option.id] = 0;
+    }
+    
+    // If n === 2 and we have precomputed topTwoCounts, use it directly
+    if (n === 2 && Object.keys(topTwoCounts).length > 0) {
+      return { ...topTwoCounts };
+    }
+    
+    // Try allVoterRankings first (from API)
+    if (allVoterRankings && allVoterRankings.length > 0) {
+      for (const ranking of allVoterRankings) {
+        if (ranking && Array.isArray(ranking)) {
+          for (let i = 0; i < Math.min(n, ranking.length); i++) {
+            const optionId = ranking[i];
+            if (counts.hasOwnProperty(optionId)) {
+              counts[optionId]++;
+            }
+          }
+        }
+      }
+      // If we got any non-zero counts, return them
+      if (Object.values(counts).some(c => c > 0)) {
+        return counts;
+      }
+    }
+    
+    // Fall back to voter.ranking if available
+    if (voters && voters.length > 0) {
+      for (const voter of voters) {
+        if (voter.ranking && Array.isArray(voter.ranking)) {
+          for (let i = 0; i < Math.min(n, voter.ranking.length); i++) {
+            const optionId = voter.ranking[i];
+            if (counts.hasOwnProperty(optionId)) {
+              counts[optionId]++;
+            }
+          }
+        }
+      }
+    }
+    
+    return counts;
+  };
+
+  const topNCounts = calculateTopNCounts(topN);
+
+  // Calculate exponential scores: 1, 1/2, 1/4, 1/8, etc.
+  const calculateExponentialScores = (factor = decayFactor) => {
+    const scores = {};
+    for (const option of options) {
+      scores[option.id] = 0;
+    }
+    
+    // Try allVoterRankings first (from API)
+    if (allVoterRankings && allVoterRankings.length > 0) {
+      for (const ranking of allVoterRankings) {
+        if (ranking && Array.isArray(ranking)) {
+          for (let i = 0; i < ranking.length; i++) {
+            const optionId = ranking[i];
+            if (scores.hasOwnProperty(optionId)) {
+              scores[optionId] += Math.pow(factor, -i);
+            }
+          }
+        }
+      }
+      // If we got any non-zero scores, return them
+      if (Object.values(scores).some(s => s > 0)) {
+        return scores;
+      }
+    }
+    
+    // Fall back to voter.ranking if available
+    if (voters && voters.length > 0) {
+      for (const voter of voters) {
+        if (voter.ranking && Array.isArray(voter.ranking)) {
+          for (let i = 0; i < voter.ranking.length; i++) {
+            const optionId = voter.ranking[i];
+            if (scores.hasOwnProperty(optionId)) {
+              scores[optionId] += Math.pow(factor, -i);
+            }
+          }
+        }
+      }
+    }
+    
+    return scores;
+  };
+
+  const exponentialScores = calculateExponentialScores();
 
   return (
     <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-6 py-12">
@@ -103,19 +199,67 @@ export default function Results() {
         <p className="text-xs tracking-[0.4em] uppercase text-pastel-muted mb-6">Results</p>
 
         {/* View mode toggle */}
-        <div className="flex items-center gap-1 mb-10 border border-pastel-border bg-[#f4f0ec] p-1 w-fit">
-          <button
-            onClick={() => setViewMode("irv")}
-            className={`text-[10px] tracking-[0.3em] uppercase px-4 py-1.5 font-semibold transition-colors ${viewMode === "irv" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
-          >
-            Ranked choice
-          </button>
-          <button
-            onClick={() => setViewMode("top2")}
-            className={`text-[10px] tracking-[0.3em] uppercase px-4 py-1.5 font-semibold transition-colors ${viewMode === "top2" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
-          >
-            Top 2 picks
-          </button>
+        <div className="flex items-center gap-4 mb-10">
+          <div className="flex items-center gap-1 border border-pastel-border bg-[#f4f0ec] p-1 w-fit">
+            <button
+              onClick={() => setViewMode("irv")}
+              className={`text-[10px] tracking-[0.3em] uppercase px-4 py-1.5 font-semibold transition-colors ${viewMode === "irv" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
+            >
+              Ranked choice
+            </button>
+            <button
+              onClick={() => setViewMode("topN")}
+              className={`text-[10px] tracking-[0.3em] uppercase px-4 py-1.5 font-semibold transition-colors ${viewMode === "topN" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
+            >
+              Top picks
+            </button>
+            <button
+              onClick={() => setViewMode("exponential")}
+              className={`text-[10px] tracking-[0.3em] uppercase px-4 py-1.5 font-semibold transition-colors ${viewMode === "exponential" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
+            >
+              Exponential
+            </button>
+          </div>
+          {viewMode === "topN" && (
+            <div className="flex items-center gap-2">
+              <label className="text-[10px] tracking-[0.2em] uppercase text-pastel-muted font-medium">Top</label>
+              <button
+                onClick={() => setTopN(Math.max(1, topN - 1))}
+                disabled={topN <= 1}
+                className="text-[10px] font-semibold px-2 py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                −
+              </button>
+              <span className="text-[10px] font-semibold w-8 text-center">{topN}</span>
+              <button
+                onClick={() => setTopN(Math.min(options.length, topN + 1))}
+                disabled={topN >= options.length}
+                className="text-[10px] font-semibold px-2 py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                +
+              </button>
+            </div>
+          )}
+          {viewMode === "exponential" && (
+            <div className="flex items-center gap-2">
+              <label className="text-[10px] tracking-[0.2em] uppercase text-pastel-muted font-medium">Decay</label>
+              <button
+                onClick={() => setDecayFactor(Math.max(1.1, Math.round((decayFactor - 0.1) * 10) / 10))}
+                disabled={decayFactor <= 1.1}
+                className="text-[10px] font-semibold px-2 py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                −
+              </button>
+              <span className="text-[10px] font-semibold w-12 text-center">{decayFactor.toFixed(1)}</span>
+              <button
+                onClick={() => setDecayFactor(Math.round((decayFactor + 0.1) * 10) / 10)}
+                disabled={decayFactor >= 5}
+                className="text-[10px] font-semibold px-2 py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                +
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Winner */}
@@ -139,20 +283,44 @@ export default function Results() {
           </div>
         )}
 
-        {poll.status === "CLOSED" && viewMode === "top2" && (() => {
-          const maxCount = Math.max(0, ...options.map((o) => topTwoCounts[o.id] || 0));
-          const top2Winners = options.filter((o) => (topTwoCounts[o.id] || 0) === maxCount && maxCount > 0);
+        {poll.status === "CLOSED" && viewMode === "topN" && (() => {
+          const maxCount = Math.max(0, ...options.map((o) => topNCounts[o.id] || 0));
+          const topNWinners = options.filter((o) => (topNCounts[o.id] || 0) === maxCount && maxCount > 0);
           return (
             <div className="mb-10 border-l-4 border-pastel-gold pl-5 py-1">
-              {top2Winners.length === 1 ? (
+              {topNWinners.length === 1 ? (
                 <>
                   <p className="text-[11px] tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Winner</p>
-                  <p className="font-display text-3xl font-bold text-pastel-ink">{top2Winners[0].label}</p>
+                  <p className="font-display text-3xl font-bold text-pastel-ink">{topNWinners[0].label}</p>
                 </>
-              ) : top2Winners.length > 1 ? (
+              ) : topNWinners.length > 1 ? (
                 <>
                   <p className="text-[11px] tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Co-winners</p>
-                  {top2Winners.map((w) => (
+                  {topNWinners.map((w) => (
+                    <p key={w.id} className="font-display text-3xl font-bold text-pastel-ink">{w.label}</p>
+                  ))}
+                </>
+              ) : (
+                <p className="font-display text-xl italic text-pastel-muted">No winner determined.</p>
+              )}
+            </div>
+          );
+        })()}
+
+        {poll.status === "CLOSED" && viewMode === "exponential" && (() => {
+          const maxScore = Math.max(0, ...options.map((o) => exponentialScores[o.id] || 0));
+          const expWinners = options.filter((o) => Math.abs((exponentialScores[o.id] || 0) - maxScore) < 0.0001 && maxScore > 0);
+          return (
+            <div className="mb-10 border-l-4 border-pastel-gold pl-5 py-1">
+              {expWinners.length === 1 ? (
+                <>
+                  <p className="text-[11px] tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Winner</p>
+                  <p className="font-display text-3xl font-bold text-pastel-ink">{expWinners[0].label}</p>
+                </>
+              ) : expWinners.length > 1 ? (
+                <>
+                  <p className="text-[11px] tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Co-winners</p>
+                  {expWinners.map((w) => (
                     <p key={w.id} className="font-display text-3xl font-bold text-pastel-ink">{w.label}</p>
                   ))}
                 </>
@@ -171,14 +339,14 @@ export default function Results() {
 
         {/* Vote summary label */}
         <div className="flex items-center justify-between text-[10px] tracking-[0.3em] uppercase text-pastel-muted mb-3">
-          <span>{viewMode === "irv" ? "Elimination round" : "Top-2 pick appearances"}</span>
-          <span>{totalBallots} ballot{totalBallots !== 1 ? "s" : ""}</span>
+          <span>{viewMode === "irv" ? "Elimination round" : viewMode === "exponential" ? "Exponential score" : `Top-${topN} pick appearances`}</span>
+          <span>{totalBallots} voter{totalBallots !== 1 ? "s" : ""}</span>
         </div>
 
         {/* Bars */}
         {(() => {
-          const counts = viewMode === "irv" ? (rounds.length > 0 ? rounds[rounds.length - 1].counts : firstChoiceCounts) : topTwoCounts;
-          const totalForPct = viewMode === "irv" ? totalBallots : options.reduce((s, o) => s + (topTwoCounts[o.id] || 0), 0);
+          const counts = viewMode === "irv" ? (rounds.length > 0 ? rounds[rounds.length - 1].counts : firstChoiceCounts) : viewMode === "exponential" ? exponentialScores : topNCounts;
+          const totalForPct = viewMode === "irv" ? totalBallots : viewMode === "exponential" ? Object.values(exponentialScores).reduce((a, b) => a + b, 0) : options.reduce((s, o) => s + (topNCounts[o.id] || 0), 0);
           let sorted;
           if (viewMode === "irv" && rounds.length > 0) {
             // Custom order: winners first, then eliminated in reverse order of elimination
@@ -223,7 +391,7 @@ export default function Results() {
                 const r = ranks[option.id];
                 const isTop = r === 1;
                 // For IRV, show elimination round instead of votes
-                let displayText = `${count} (${pct}%)`;
+                let displayText = viewMode === "exponential" ? `${count.toFixed(2)}` : `${count} (${pct}%)`;
                 let barPct = pct;
                 if (viewMode === "irv" && rounds.length > 0) {
                   const elimRoundIndex = rounds.findIndex(r => r.eliminated?.some(e => e.id === option.id));
@@ -256,10 +424,82 @@ export default function Results() {
         })()}
 
         {/* Top-2 method explanation */}
-        {viewMode === "top2" && (
+        {viewMode === "topN" && (
           <p className="text-[11px] text-pastel-muted mb-8 leading-relaxed">
-            Each voter's first and second choices each count as one vote. The book with the most appearances in top-2 picks wins.
+            Each voter's top {topN} choice{topN > 1 ? 's each' : ''} count{topN > 1 ? '' : 's'} as one vote. The book with the most appearances in top-{topN} picks wins.
           </p>
+        )}
+
+        {/* Exponential method explanation */}
+        {viewMode === "exponential" && (
+          <div className="mb-8 relative">
+            <div className="flex items-start gap-2">
+              <p className="text-[11px] text-pastel-muted leading-relaxed flex-1">
+                Each voter's choices are scored exponentially with a decay factor of {decayFactor.toFixed(1)}: 1st place gets 1 point, 2nd gets {(1/decayFactor).toFixed(2)} points, 3rd gets {Math.pow(decayFactor, -2).toFixed(2)} points, and so on. The book with the highest total score wins.
+              </p>
+              <button
+                onClick={() => setShowExponentialInfo(!showExponentialInfo)}
+                className="text-pastel-muted hover:text-pastel-ink flex-shrink-0 mt-0.5 transition-colors"
+                title="View score decay visualization"
+              >
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-pastel-muted text-[10px] font-semibold">i</span>
+              </button>
+            </div>
+            {showExponentialInfo && (
+              <div className="mt-4 p-4 bg-pastel-card border border-pastel-border rounded">
+                <div className="flex items-start justify-between mb-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-pastel-mid">Score Decay by Position</p>
+                  <button
+                    onClick={() => setShowExponentialInfo(false)}
+                    className="text-pastel-muted hover:text-pastel-ink text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <svg viewBox="0 0 280 140" className="w-full max-w-sm border border-pastel-border bg-white rounded">
+                  {/* Grid lines */}
+                  <line x1="30" y1="110" x2="270" y2="110" stroke="#e5e1d8" strokeWidth="1" />
+                  {/* Y axis */}
+                  <line x1="30" y1="20" x2="30" y2="110" stroke="#8b8380" strokeWidth="1.5" />
+                  {/* X axis */}
+                  <line x1="30" y1="110" x2="270" y2="110" stroke="#8b8380" strokeWidth="1.5" />
+                  
+                  {/* Grid background */}
+                  {[...Array(5)].map((_, i) => {
+                    const x = 30 + (i + 1) * 48;
+                    return <line key={`vgrid-${i}`} x1={x} y1="20" x2={x} y2="110" stroke="#ede9e2" strokeWidth="0.5" strokeDasharray="2,2" />;
+                  })}
+                  {[...Array(4)].map((_, i) => {
+                    const y = 110 - (i + 1) * 22.5;
+                    return <line key={`hgrid-${i}`} x1="30" y1={y} x2="270" y2={y} stroke="#ede9e2" strokeWidth="0.5" strokeDasharray="2,2" />;
+                  })}
+                  
+                  {/* Y axis labels */}
+                  <text x="25" y="115" fontSize="10" textAnchor="end" fill="#666">0</text>
+                  <text x="25" y="27" fontSize="10" textAnchor="end" fill="#666">1</text>
+                  
+                  {/* Points and line */}
+                  {[...Array(6)].map((_, i) => {
+                    const score = Math.pow(decayFactor, -i);
+                    const x = 30 + (i + 1) * 40;
+                    const y = 110 - score * 90;
+                    return (
+                      <g key={`point-${i}`}>
+                        {i < 5 && <line x1={x} y1={y} x2={30 + (i + 2) * 40} y2={110 - Math.pow(decayFactor, -(i + 1)) * 90} stroke="#a89968" strokeWidth="2" />}
+                        <circle cx={x} cy={y} r="3" fill="#a89968" />
+                        <text x={x} y="125" fontSize="9" textAnchor="middle" fill="#666">{i + 1}</text>
+                        <text x={x} y="103" fontSize="8" textAnchor="middle" fill="#999">{score.toFixed(2)}</text>
+                      </g>
+                    );
+                  })}
+                  
+                  {/* Axis labels */}
+                  <text x="150" y="138" fontSize="10" textAnchor="middle" fill="#666">Position</text>
+                  <text x="8" y="65" fontSize="10" textAnchor="middle" fill="#666" transform="rotate(-90 8 65)">Score</text>
+                </svg>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Step-by-step IRV elimination */}
