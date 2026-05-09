@@ -58,8 +58,8 @@ export default function Results() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-2xl border border-pastel-border bg-pastel-card px-16 py-14">
+      <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-3 sm:px-6 py-6 sm:py-12">
+        <div className="w-full max-w-2xl border border-pastel-border bg-pastel-card px-4 sm:px-16 py-6 sm:py-14">
           <p className="text-xs tracking-[0.3em] uppercase text-pastel-muted">Loading…</p>
         </div>
       </main>
@@ -68,8 +68,8 @@ export default function Results() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-2xl border border-pastel-border bg-pastel-card px-16 py-14">
+      <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-3 sm:px-6 py-6 sm:py-12">
+        <div className="w-full max-w-2xl border border-pastel-border bg-pastel-card px-4 sm:px-16 py-6 sm:py-14">
           <p className="text-sm text-pastel-ink mb-1 font-semibold">Something went wrong</p>
           <p className="text-xs text-pastel-mid mb-6">{error}</p>
           <button onClick={loadResults} className="text-xs tracking-[0.35em] uppercase text-pastel-mid border border-pastel-border px-5 py-2.5 hover:border-pastel-gold hover:text-pastel-gold transition-colors">
@@ -177,84 +177,84 @@ export default function Results() {
   const exponentialScores = calculateExponentialScores();
 
   return (
-    <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-6 py-12">
+    <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-3 sm:px-6 py-6 sm:py-12">
       <div className="relative w-full max-w-2xl">
-      <div className="border border-pastel-border bg-pastel-card px-16 py-14">
+      <div className="border border-pastel-border bg-pastel-card px-4 sm:px-16 py-6 sm:py-14">
 
         <Link
           to="/polls"
           aria-label="Back to all polls"
-          className="inline-flex items-center justify-center w-10 h-10 border border-pastel-border bg-[#f4f0ec] text-pastel-ink hover:bg-pastel-gold hover:text-pastel-ink transition-colors mb-8"
+          className="inline-flex items-center justify-center w-10 h-10 border border-pastel-border bg-[#f4f0ec] text-pastel-ink hover:bg-pastel-gold hover:text-pastel-ink transition-colors mb-6 sm:mb-8"
         >
           <span aria-hidden="true" className="text-xl leading-none">←</span>
         </Link>
 
         {/* Header */}
-        <div className="flex items-center gap-3 mb-10">
+        <div className="flex items-center gap-3 mb-8 sm:mb-10">
           <div className="h-px flex-1 bg-pastel-border" />
-          <span className="text-[11px] tracking-[0.5em] uppercase text-pastel-gold font-medium">Book Club</span>
+          <span className="text-[10px] sm:text-[11px] tracking-[0.4em] sm:tracking-[0.5em] uppercase text-pastel-gold font-medium whitespace-nowrap">Book Club</span>
           <div className="h-px flex-1 bg-pastel-border" />
         </div>
-        <h1 className="font-display text-5xl font-bold text-pastel-ink leading-none mb-1">{formatMonth(poll.month)}</h1>
-        <p className="text-xs tracking-[0.4em] uppercase text-pastel-muted mb-6">Results</p>
+        <h1 className="font-display text-3xl sm:text-5xl font-bold text-pastel-ink leading-none mb-1">{formatMonth(poll.month)}</h1>
+        <p className="text-[10px] sm:text-xs tracking-[0.3em] sm:tracking-[0.4em] uppercase text-pastel-muted mb-6">Results</p>
 
         {/* View mode toggle */}
-        <div className="flex items-center gap-4 mb-10">
-          <div className="flex items-center gap-1 border border-pastel-border bg-[#f4f0ec] p-1 w-fit">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-10 overflow-x-auto">
+          <div className="flex items-center gap-0.5 sm:gap-1 border border-pastel-border bg-[#f4f0ec] p-0.5 sm:p-1 w-fit shrink-0">
             <button
               onClick={() => setViewMode("irv")}
-              className={`text-[10px] tracking-[0.3em] uppercase px-4 py-1.5 font-semibold transition-colors ${viewMode === "irv" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
+              className={`text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.3em] uppercase px-2 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "irv" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
             >
-              Ranked choice
+              Oscar
             </button>
             <button
               onClick={() => setViewMode("topN")}
-              className={`text-[10px] tracking-[0.3em] uppercase px-4 py-1.5 font-semibold transition-colors ${viewMode === "topN" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
+              className={`text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.3em] uppercase px-2 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "topN" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
             >
-              Top picks
+              Top N
             </button>
             <button
               onClick={() => setViewMode("exponential")}
-              className={`text-[10px] tracking-[0.3em] uppercase px-4 py-1.5 font-semibold transition-colors ${viewMode === "exponential" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
+              className={`text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.3em] uppercase px-2 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "exponential" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
             >
               Exponential
             </button>
           </div>
           {viewMode === "topN" && (
-            <div className="flex items-center gap-2">
-              <label className="text-[10px] tracking-[0.2em] uppercase text-pastel-muted font-medium">Top</label>
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+              <label className="text-[8px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.2em] uppercase text-pastel-muted font-medium">Top</label>
               <button
                 onClick={() => setTopN(Math.max(1, topN - 1))}
                 disabled={topN <= 1}
-                className="text-[10px] font-semibold px-2 py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 −
               </button>
-              <span className="text-[10px] font-semibold w-8 text-center">{topN}</span>
+              <span className="text-[9px] sm:text-[10px] font-semibold w-6 text-center">{topN}</span>
               <button
                 onClick={() => setTopN(Math.min(options.length, topN + 1))}
                 disabled={topN >= options.length}
-                className="text-[10px] font-semibold px-2 py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 +
               </button>
             </div>
           )}
           {viewMode === "exponential" && (
-            <div className="flex items-center gap-2">
-              <label className="text-[10px] tracking-[0.2em] uppercase text-pastel-muted font-medium">Decay</label>
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+              <label className="text-[8px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.2em] uppercase text-pastel-muted font-medium">Decay</label>
               <button
                 onClick={() => setDecayFactor(Math.max(1.1, Math.round((decayFactor - 0.1) * 10) / 10))}
                 disabled={decayFactor <= 1.1}
-                className="text-[10px] font-semibold px-2 py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 −
               </button>
-              <span className="text-[10px] font-semibold w-12 text-center">{decayFactor.toFixed(1)}</span>
+              <span className="text-[9px] sm:text-[10px] font-semibold w-8 text-center">{decayFactor.toFixed(1)}</span>
               <button
                 onClick={() => setDecayFactor(Math.round((decayFactor + 0.1) * 10) / 10)}
                 disabled={decayFactor >= 5}
-                className="text-[10px] font-semibold px-2 py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 +
               </button>
@@ -264,17 +264,17 @@ export default function Results() {
 
         {/* Winner */}
         {poll.status === "CLOSED" && viewMode === "irv" && (
-          <div className="mb-10 border-l-4 border-pastel-gold pl-5 py-1">
+          <div className="mb-10 border-l-4 border-pastel-gold pl-4 sm:pl-5 py-1">
             {winner ? (
               <>
-                <p className="text-[11px] tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Winner</p>
-                <p className="font-display text-3xl font-bold text-pastel-ink">{winner.label}</p>
+                <p className="text-[10px] sm:text-[11px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Winner</p>
+                <p className="font-display text-2xl sm:text-3xl font-bold text-pastel-ink">{winner.label}</p>
               </>
             ) : isTie && tiedWinners?.length > 0 ? (
               <>
-                <p className="text-[11px] tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Co-winners</p>
+                <p className="text-[10px] sm:text-[11px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Co-winners</p>
                 {tiedWinners.map((w) => (
-                  <p key={w.id} className="font-display text-3xl font-bold text-pastel-ink">{w.label}</p>
+                  <p key={w.id} className="font-display text-2xl sm:text-3xl font-bold text-pastel-ink">{w.label}</p>
                 ))}
               </>
             ) : (
@@ -579,7 +579,7 @@ export default function Results() {
         )}
 
         {/* Navigation */}
-        <div className="flex items-center gap-8 text-[11px] tracking-[0.35em] uppercase border-t border-pastel-border pt-8">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-8 text-[9px] sm:text-[11px] tracking-[0.25em] sm:tracking-[0.35em] uppercase border-t border-pastel-border pt-6 sm:pt-8">
           {poll.status !== "CLOSED" && (
             <Link to={`/polls/${pollId}`} className="text-pastel-mid hover:text-pastel-ink transition-colors font-semibold">
               ← Ballot
@@ -592,8 +592,8 @@ export default function Results() {
 
       </div>
 
-      {/* Voters sidebar */}
-      <div className="absolute top-0 left-full ml-4 w-44 border border-pastel-border bg-pastel-card px-4 py-5">
+      {/* Voters sidebar - hidden on mobile, shown on desktop */}
+      <div className="hidden lg:block absolute top-0 left-full ml-4 w-44 border border-pastel-border bg-pastel-card px-4 py-5">
         <p className="text-[9px] tracking-[0.45em] uppercase text-pastel-gold font-semibold mb-4">Voted</p>
         {sortedVoters.length === 0 ? (
           <p className="text-[11px] text-pastel-muted italic">No votes yet.</p>

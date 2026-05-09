@@ -135,12 +135,12 @@ export default function PollsPage() {
     navigate("/sign-in", { replace: true });
   }
 
-  const inputClass = "w-full bg-transparent border-b border-pastel-border pb-2.5 text-sm text-pastel-ink placeholder-pastel-muted focus:outline-none focus:border-pastel-gold transition-colors duration-200";
-  const labelClass = "block text-[11px] tracking-[0.4em] uppercase text-pastel-muted mb-3";
+  const inputClass = "w-full bg-transparent border-b border-pastel-border pb-2 sm:pb-2.5 text-xs sm:text-sm text-pastel-ink placeholder-pastel-muted focus:outline-none focus:border-pastel-gold transition-colors duration-200";
+  const labelClass = "block text-[9px] sm:text-[11px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-pastel-muted mb-2 sm:mb-3";
 
   return (
-    <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-6 py-12">
-      <div className="w-full max-w-2xl border border-pastel-border bg-pastel-card px-16 py-14">
+    <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-3 sm:px-6 py-6 sm:py-12">
+      <div className="w-full max-w-2xl border border-pastel-border bg-pastel-card px-4 sm:px-16 py-6 sm:py-14">
 
         <div className="flex items-center gap-3 mb-12">
           <div className="h-px flex-1 bg-pastel-border" />
@@ -154,30 +154,30 @@ export default function PollsPage() {
           <div className="h-px flex-1 bg-pastel-border" />
         </div>
 
-        <div className="flex items-start justify-between gap-4 mb-10">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-10">
           <div>
-            <h1 className="font-display text-5xl font-light text-pastel-ink leading-none mb-3">Monthly Votes</h1>
-            <p className="text-sm text-pastel-mid tracking-wide">Rank · Decide · Read</p>
+            <h1 className="font-display text-3xl sm:text-5xl font-light text-pastel-ink leading-none mb-3">Monthly Votes</h1>
+            <p className="text-xs sm:text-sm text-pastel-mid tracking-wide">Rank · Decide · Read</p>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
             <button
               type="button"
               onClick={() => { setShowForm((v) => !v); setCreateMessage(""); }}
-              className="text-[10px] tracking-[0.35em] uppercase text-pastel-gold hover:opacity-70 transition-opacity font-medium"
+              className="text-[9px] sm:text-[10px] tracking-[0.25em] sm:tracking-[0.35em] uppercase text-pastel-gold hover:opacity-70 transition-opacity font-medium whitespace-nowrap"
             >
-              {showForm ? "− Cancel" : "+ New Poll"}
+              {showForm ? "− Cancel" : "+ New"}
             </button>
             <button
               type="button"
               onClick={handleLogout}
-              className="text-[10px] tracking-[0.35em] uppercase text-pastel-mid border border-pastel-border px-4 py-2 hover:border-pastel-gold hover:text-pastel-gold transition-colors duration-200"
+              className="text-[9px] sm:text-[10px] tracking-[0.25em] sm:tracking-[0.35em] uppercase text-pastel-mid border border-pastel-border px-2 sm:px-4 py-1.5 sm:py-2 hover:border-pastel-gold hover:text-pastel-gold transition-colors duration-200 whitespace-nowrap"
             >
               Logout
             </button>
             {showAdmin && (
               <Link
                 to="/admin"
-                className="text-[10px] tracking-[0.35em] uppercase text-pastel-mid border border-pastel-border px-4 py-2 hover:border-pastel-gold hover:text-pastel-gold transition-colors duration-200"
+                className="text-[9px] sm:text-[10px] tracking-[0.25em] sm:tracking-[0.35em] uppercase text-pastel-mid border border-pastel-border px-2 sm:px-4 py-1.5 sm:py-2 hover:border-pastel-gold hover:text-pastel-gold transition-colors duration-200 whitespace-nowrap"
               >
                 Admin
               </Link>
@@ -213,19 +213,19 @@ export default function PollsPage() {
                 <Link
                   key={poll.id}
                   to={poll.status === "CLOSED" ? `/results/${poll.id}` : `/polls/${poll.id}`}
-                  className="group flex items-center justify-between px-5 py-4 border border-pastel-border bg-pastel-option hover:border-pastel-gold hover:bg-[#fdf8f0] transition-all duration-200"
+                  className="group flex flex-col sm:flex-row items-start sm:items-center justify-between px-3 sm:px-5 py-3 sm:py-4 border border-pastel-border bg-pastel-option hover:border-pastel-gold hover:bg-[#fdf8f0] transition-all duration-200 gap-3 sm:gap-0"
                 >
-                  <div className="min-w-0">
-                    <p className="font-display text-2xl text-pastel-ink group-hover:text-pastel-gold transition-colors duration-200 leading-snug">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-display text-xl sm:text-2xl text-pastel-ink group-hover:text-pastel-gold transition-colors duration-200 leading-snug">
                       {formatMonth(poll.month)}
                     </p>
-                    <span className={`text-[9px] tracking-[0.15em] uppercase font-medium mt-1 inline-block ${
+                    <span className={`text-[8px] sm:text-[9px] tracking-[0.15em] uppercase font-medium mt-1 inline-block ${
                       poll.status === "OPEN" ? "text-pastel-sage"
                       : poll.status === "CLOSED" ? "text-pastel-rose"
                       : "text-pastel-muted"
                     }`}>{poll.status}</span>
                   </div>
-                  <span className="text-pastel-muted group-hover:text-pastel-gold transition-colors duration-200 ml-4 shrink-0">→</span>
+                  <span className="text-pastel-muted group-hover:text-pastel-gold transition-colors duration-200 shrink-0">→</span>
                 </Link>
               ))}
             </div>
@@ -251,9 +251,9 @@ export default function PollsPage() {
 
               <div>
                 <label className={labelClass}>Books</label>
-                <div className="flex flex-col gap-5">
+                <div className="flex flex-col gap-4 sm:gap-5">
                   {options.map((opt, index) => (
-                    <div key={index} className="flex items-end gap-3">
+                    <div key={index} className="flex items-end gap-2 sm:gap-3">
                       <input
                         type="text"
                         placeholder={`Book ${index + 1}`}
@@ -265,19 +265,19 @@ export default function PollsPage() {
                       />
                       {options.length > 1 && (
                         <button type="button" onClick={() => removeOption(index)}
-                          className="text-pastel-muted hover:text-pastel-ink transition-colors pb-2.5 text-lg leading-none shrink-0">×</button>
+                          className="text-pastel-muted hover:text-pastel-ink transition-colors pb-2 text-lg leading-none shrink-0">×</button>
                       )}
                     </div>
                   ))}
                 </div>
                 <button type="button" onClick={addOption}
-                  className="mt-5 text-[11px] tracking-[0.4em] uppercase text-pastel-gold hover:opacity-70 font-medium transition-opacity">
+                  className="mt-4 sm:mt-5 text-[10px] sm:text-[11px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-pastel-gold hover:opacity-70 font-medium transition-opacity">
                   + Add book
                 </button>
               </div>
 
               <button type="submit" disabled={creating}
-                className="mt-2 py-3.5 bg-pastel-ink text-pastel-card text-[11px] font-semibold tracking-[0.35em] uppercase hover:opacity-80 transition-opacity disabled:opacity-30">
+                className="mt-2 w-full py-2.5 sm:py-3.5 bg-pastel-ink text-pastel-card text-[10px] sm:text-[11px] font-semibold tracking-[0.25em] sm:tracking-[0.35em] uppercase hover:opacity-80 transition-opacity disabled:opacity-30">
                 {creating ? "Creating…" : "Create Poll"}
               </button>
             </form>
