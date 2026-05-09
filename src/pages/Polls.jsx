@@ -165,7 +165,7 @@ export default function PollsPage() {
               onClick={() => { setShowForm((v) => !v); setCreateMessage(""); }}
               className="text-[9px] sm:text-[10px] tracking-[0.25em] sm:tracking-[0.35em] uppercase text-pastel-gold hover:opacity-70 transition-opacity font-medium whitespace-nowrap"
             >
-              {showForm ? "− Cancel" : "+ New"}
+              {showForm ? "− Cancel" : "+ New Poll"}
             </button>
             <button
               type="button"

@@ -23,7 +23,7 @@ export default function Results() {
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState("irv"); // "irv" | "topN" | "exponential"
   const [topN, setTopN] = useState(2);
-  const [decayFactor, setDecayFactor] = useState(1.4);
+  const [decayFactor, setDecayFactor] = useState(1.8);
 
   function formatMonth(monthStr) {
     if (monthStr.includes('Demo')) {
