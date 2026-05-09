@@ -93,7 +93,7 @@ function SortableOption({
   return (
     <div
       ref={handleNodeRef}
-      style={style}
+      style={{...style, touchAction: 'none'}}
       className={`flex items-center gap-3 px-4 py-3 ${isLocked ? "bg-[#ababa6] text-white" : "bg-[#f4f4f2]"} ${isLocked ? "cursor-default" : "cursor-grab"} select-none transition-all duration-150 border-l-2 ${accent.bar.replace('bg-', 'border-')} ${
         isDragging ? "opacity-50 shadow-lg" : isLocked ? "" : "hover:bg-[#eeeeeb]"
       }`}
@@ -237,9 +237,13 @@ export default function Poll() {
     confirmSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [confirming]);
 
+  // const sensors = useSensors(
+  //   useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+  //   useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+  // );
+
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 8 } })
   );
 
   useEffect(() => () => {
