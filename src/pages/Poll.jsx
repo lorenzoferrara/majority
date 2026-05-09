@@ -238,6 +238,7 @@ export default function Poll() {
   }, [confirming]);
 
   const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 8 } })
   );
 
@@ -486,7 +487,7 @@ export default function Poll() {
             ) : (
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={ranking.map((o) => o.id)} strategy={verticalListSortingStrategy}>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-2">
                     {ranking.map((option, index) => (
                       <SortableOption
                         key={option.id}
