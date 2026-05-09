@@ -203,21 +203,21 @@ export default function Results() {
           <div className="flex items-center gap-0.5 sm:gap-1 border border-pastel-border bg-[#f4f0ec] p-0.5 sm:p-1 w-fit shrink-0">
             <button
               onClick={() => setViewMode("irv")}
-              className={`text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.3em] uppercase px-2 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "irv" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
+              className={`text-[10px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.3em] uppercase px-2.5 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "irv" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
             >
-              Ranked
+              OSCAR
             </button>
             <button
               onClick={() => setViewMode("topN")}
-              className={`text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.3em] uppercase px-2 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "topN" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
+              className={`text-[10px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.3em] uppercase px-2.5 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "topN" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
             >
-              Top
+              TOP N
             </button>
             <button
               onClick={() => setViewMode("exponential")}
-              className={`text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.3em] uppercase px-2 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "exponential" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
+              className={`text-[10px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.3em] uppercase px-2.5 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "exponential" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
             >
-              Exp
+              EXPONENTIAL
             </button>
           </div>
           {viewMode === "topN" && (
