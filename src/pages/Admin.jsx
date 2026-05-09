@@ -114,7 +114,7 @@ export default function AdminPage() {
           <div className="mb-10">
             {polls.map((poll) => (
               <div key={poll.id} className="border-b border-pastel-border last:border-b-0 py-4 sm:py-5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                <div className="flex items-center justify-between gap-2 sm:gap-4">
                   {/* Left: month + meta */}
                   <div className="min-w-0 flex-1">
                     <p className="font-display text-lg sm:text-xl text-pastel-ink leading-snug">{formatMonth(poll.month)}</p>

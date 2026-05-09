@@ -51,7 +51,21 @@ export default function Results() {
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => { loadResults(); }, [pollId]);
+  // Effect 1: Initial load on mount or pollId change
+  useEffect(() => { 
+    loadResults(); 
+  }, [pollId]);
+
+  // Effect 2: Resilience Polling (N-seconds heartbeat)
+  useEffect(() => {
+    const heartbeat = setInterval(() => {
+      loadResults();
+    }, 5000); // 5 seconds
+
+    return () => clearInterval(heartbeat);
+  }, [pollId]);
+
+  // Effect 3: Real-time updates via SSE
   useSSE({ "ballot-submitted": loadResults });
 
   if (loading) {
