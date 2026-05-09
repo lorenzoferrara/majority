@@ -205,19 +205,19 @@ export default function Results() {
               onClick={() => setViewMode("irv")}
               className={`text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.3em] uppercase px-2 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "irv" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
             >
-              Oscar
+              Ranked
             </button>
             <button
               onClick={() => setViewMode("topN")}
               className={`text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.3em] uppercase px-2 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "topN" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
             >
-              Top N
+              Top
             </button>
             <button
               onClick={() => setViewMode("exponential")}
               className={`text-[8px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.3em] uppercase px-2 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "exponential" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
             >
-              Exponential
+              Exp
             </button>
           </div>
           {viewMode === "topN" && (
@@ -226,15 +226,15 @@ export default function Results() {
               <button
                 onClick={() => setTopN(Math.max(1, topN - 1))}
                 disabled={topN <= 1}
-                className="text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="text-[12px] sm:text-[10px] font-semibold px-2.5 sm:px-2 py-1.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[44px] sm:min-w-auto"
               >
                 −
               </button>
-              <span className="text-[9px] sm:text-[10px] font-semibold w-6 text-center">{topN}</span>
+              <span className="text-[10px] sm:text-[10px] font-semibold w-8 text-center">{topN}</span>
               <button
                 onClick={() => setTopN(Math.min(options.length, topN + 1))}
                 disabled={topN >= options.length}
-                className="text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="text-[12px] sm:text-[10px] font-semibold px-2.5 sm:px-2 py-1.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[44px] sm:min-w-auto"
               >
                 +
               </button>
@@ -246,15 +246,15 @@ export default function Results() {
               <button
                 onClick={() => setDecayFactor(Math.max(1.1, Math.round((decayFactor - 0.1) * 10) / 10))}
                 disabled={decayFactor <= 1.1}
-                className="text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="text-[12px] sm:text-[10px] font-semibold px-2.5 sm:px-2 py-1.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[44px] sm:min-w-auto"
               >
                 −
               </button>
-              <span className="text-[9px] sm:text-[10px] font-semibold w-8 text-center">{decayFactor.toFixed(1)}</span>
+              <span className="text-[10px] sm:text-[10px] font-semibold w-8 text-center">{decayFactor.toFixed(1)}</span>
               <button
                 onClick={() => setDecayFactor(Math.round((decayFactor + 0.1) * 10) / 10)}
                 disabled={decayFactor >= 5}
-                className="text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="text-[12px] sm:text-[10px] font-semibold px-2.5 sm:px-2 py-1.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[44px] sm:min-w-auto"
               >
                 +
               </button>

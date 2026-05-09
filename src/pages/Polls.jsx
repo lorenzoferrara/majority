@@ -213,10 +213,10 @@ export default function PollsPage() {
                 <Link
                   key={poll.id}
                   to={poll.status === "CLOSED" ? `/results/${poll.id}` : `/polls/${poll.id}`}
-                  className="group flex flex-col sm:flex-row items-start sm:items-center justify-between px-3 sm:px-5 py-3 sm:py-4 border border-pastel-border bg-pastel-option hover:border-pastel-gold hover:bg-[#fdf8f0] transition-all duration-200 gap-3 sm:gap-0"
+                  className="group flex items-center justify-between px-3 sm:px-5 py-3 sm:py-4 border border-pastel-border bg-pastel-option hover:border-pastel-gold hover:bg-[#fdf8f0] transition-all duration-200 gap-2 sm:gap-3"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="font-display text-xl sm:text-2xl text-pastel-ink group-hover:text-pastel-gold transition-colors duration-200 leading-snug">
+                    <p className="font-display text-lg sm:text-2xl text-pastel-ink group-hover:text-pastel-gold transition-colors duration-200 leading-snug">
                       {formatMonth(poll.month)}
                     </p>
                     <span className={`text-[8px] sm:text-[9px] tracking-[0.15em] uppercase font-medium mt-1 inline-block ${
@@ -225,7 +225,7 @@ export default function PollsPage() {
                       : "text-pastel-muted"
                     }`}>{poll.status}</span>
                   </div>
-                  <span className="text-pastel-muted group-hover:text-pastel-gold transition-colors duration-200 shrink-0">→</span>
+                  <span className="text-pastel-muted group-hover:text-pastel-gold transition-colors duration-200 ml-2 shrink-0">→</span>
                 </Link>
               ))}
             </div>
