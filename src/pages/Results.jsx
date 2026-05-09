@@ -21,11 +21,9 @@ export default function Results() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [roundsOpen, setRoundsOpen] = useState(false);
   const [viewMode, setViewMode] = useState("irv"); // "irv" | "topN" | "exponential"
   const [topN, setTopN] = useState(2);
   const [decayFactor, setDecayFactor] = useState(1.4);
-  const [showExponentialInfo, setShowExponentialInfo] = useState(false);
 
   function formatMonth(monthStr) {
     if (monthStr.includes('Demo')) {
@@ -432,87 +430,61 @@ export default function Results() {
 
         {/* Exponential method explanation */}
         {viewMode === "exponential" && (
-          <div className="mb-8 relative">
-            <div className="flex items-start gap-2">
-              <p className="text-[11px] text-pastel-muted leading-relaxed flex-1">
-                Each voter's choices are scored exponentially with a decay factor of {decayFactor.toFixed(1)}: 1st place gets 1 point, 2nd gets {(1/decayFactor).toFixed(2)} points, 3rd gets {Math.pow(decayFactor, -2).toFixed(2)} points, and so on. The book with the highest total score wins.
-              </p>
-              <button
-                onClick={() => setShowExponentialInfo(!showExponentialInfo)}
-                className="text-pastel-muted hover:text-pastel-ink flex-shrink-0 mt-0.5 transition-colors"
-                title="View score decay visualization"
-              >
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full border border-pastel-muted text-[10px] font-semibold">i</span>
-              </button>
+          <div className="mb-8">
+            <p className="text-[11px] text-pastel-muted leading-relaxed mb-4">
+              Each voter's choices are scored exponentially with a decay factor of {decayFactor.toFixed(1)}: 1st place gets 1 point, 2nd gets {(1/decayFactor).toFixed(2)} points, 3rd gets {Math.pow(decayFactor, -2).toFixed(2)} points, and so on. The book with the highest total score wins.
+            </p>
+            <div className="p-4 bg-pastel-card border border-pastel-border rounded">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-pastel-mid mb-3">Score Decay by Position</p>
+              <svg viewBox="0 0 280 140" className="w-full max-w-sm border border-pastel-border bg-white rounded">
+                {/* Grid lines */}
+                <line x1="30" y1="110" x2="270" y2="110" stroke="#e5e1d8" strokeWidth="1" />
+                {/* Y axis */}
+                <line x1="30" y1="20" x2="30" y2="110" stroke="#8b8380" strokeWidth="1.5" />
+                {/* X axis */}
+                <line x1="30" y1="110" x2="270" y2="110" stroke="#8b8380" strokeWidth="1.5" />
+                
+                {/* Grid background */}
+                {[...Array(5)].map((_, i) => {
+                  const x = 30 + (i + 1) * 48;
+                  return <line key={`vgrid-${i}`} x1={x} y1="20" x2={x} y2="110" stroke="#ede9e2" strokeWidth="0.5" strokeDasharray="2,2" />;
+                })}
+                {[...Array(4)].map((_, i) => {
+                  const y = 110 - (i + 1) * 22.5;
+                  return <line key={`hgrid-${i}`} x1="30" y1={y} x2="270" y2={y} stroke="#ede9e2" strokeWidth="0.5" strokeDasharray="2,2" />;
+                })}
+                
+                {/* Y axis labels */}
+                <text x="25" y="115" fontSize="10" textAnchor="end" fill="#666">0</text>
+                <text x="25" y="27" fontSize="10" textAnchor="end" fill="#666">1</text>
+                
+                {/* Points and line */}
+                {[...Array(6)].map((_, i) => {
+                  const score = Math.pow(decayFactor, -i);
+                  const x = 30 + (i + 1) * 40;
+                  const y = 110 - score * 90;
+                  return (
+                    <g key={`point-${i}`}>
+                      {i < 5 && <line x1={x} y1={y} x2={30 + (i + 2) * 40} y2={110 - Math.pow(decayFactor, -(i + 1)) * 90} stroke="#a89968" strokeWidth="2" />}
+                      <circle cx={x} cy={y} r="3" fill="#a89968" />
+                      <text x={x} y="125" fontSize="9" textAnchor="middle" fill="#666">{i + 1}</text>
+                      <text x={x} y="103" fontSize="8" textAnchor="middle" fill="#999">{score.toFixed(2)}</text>
+                    </g>
+                  );
+                })}
+                
+                {/* Axis labels */}
+                <text x="150" y="138" fontSize="10" textAnchor="middle" fill="#666">Position</text>
+                <text x="8" y="65" fontSize="10" textAnchor="middle" fill="#666" transform="rotate(-90 8 65)">Score</text>
+              </svg>
             </div>
-            {showExponentialInfo && (
-              <div className="mt-4 p-4 bg-pastel-card border border-pastel-border rounded">
-                <div className="flex items-start justify-between mb-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-pastel-mid">Score Decay by Position</p>
-                  <button
-                    onClick={() => setShowExponentialInfo(false)}
-                    className="text-pastel-muted hover:text-pastel-ink text-xs"
-                  >
-                    ✕
-                  </button>
-                </div>
-                <svg viewBox="0 0 280 140" className="w-full max-w-sm border border-pastel-border bg-white rounded">
-                  {/* Grid lines */}
-                  <line x1="30" y1="110" x2="270" y2="110" stroke="#e5e1d8" strokeWidth="1" />
-                  {/* Y axis */}
-                  <line x1="30" y1="20" x2="30" y2="110" stroke="#8b8380" strokeWidth="1.5" />
-                  {/* X axis */}
-                  <line x1="30" y1="110" x2="270" y2="110" stroke="#8b8380" strokeWidth="1.5" />
-                  
-                  {/* Grid background */}
-                  {[...Array(5)].map((_, i) => {
-                    const x = 30 + (i + 1) * 48;
-                    return <line key={`vgrid-${i}`} x1={x} y1="20" x2={x} y2="110" stroke="#ede9e2" strokeWidth="0.5" strokeDasharray="2,2" />;
-                  })}
-                  {[...Array(4)].map((_, i) => {
-                    const y = 110 - (i + 1) * 22.5;
-                    return <line key={`hgrid-${i}`} x1="30" y1={y} x2="270" y2={y} stroke="#ede9e2" strokeWidth="0.5" strokeDasharray="2,2" />;
-                  })}
-                  
-                  {/* Y axis labels */}
-                  <text x="25" y="115" fontSize="10" textAnchor="end" fill="#666">0</text>
-                  <text x="25" y="27" fontSize="10" textAnchor="end" fill="#666">1</text>
-                  
-                  {/* Points and line */}
-                  {[...Array(6)].map((_, i) => {
-                    const score = Math.pow(decayFactor, -i);
-                    const x = 30 + (i + 1) * 40;
-                    const y = 110 - score * 90;
-                    return (
-                      <g key={`point-${i}`}>
-                        {i < 5 && <line x1={x} y1={y} x2={30 + (i + 2) * 40} y2={110 - Math.pow(decayFactor, -(i + 1)) * 90} stroke="#a89968" strokeWidth="2" />}
-                        <circle cx={x} cy={y} r="3" fill="#a89968" />
-                        <text x={x} y="125" fontSize="9" textAnchor="middle" fill="#666">{i + 1}</text>
-                        <text x={x} y="103" fontSize="8" textAnchor="middle" fill="#999">{score.toFixed(2)}</text>
-                      </g>
-                    );
-                  })}
-                  
-                  {/* Axis labels */}
-                  <text x="150" y="138" fontSize="10" textAnchor="middle" fill="#666">Position</text>
-                  <text x="8" y="65" fontSize="10" textAnchor="middle" fill="#666" transform="rotate(-90 8 65)">Score</text>
-                </svg>
-              </div>
-            )}
           </div>
         )}
 
         {/* Step-by-step IRV elimination */}
         {viewMode === "irv" && rounds.length > 0 && (
           <div className="mb-8">
-            <button
-              onClick={() => setRoundsOpen((v) => !v)}
-              className="flex items-center gap-2 text-[10px] tracking-[0.4em] uppercase text-pastel-mid hover:text-pastel-ink font-semibold mb-4 transition-colors"
-            >
-              <span>{roundsOpen ? "−" : "+"}</span>
-              <span>How the winner was decided: Round-by-round ({rounds.length} round{rounds.length !== 1 ? "s" : ""})</span>
-            </button>
-            {!roundsOpen ? null : (
+            <p className="text-[11px] text-pastel-muted mb-4 font-semibold tracking-[0.2em] uppercase">How the winner was decided: Round-by-round ({rounds.length} round{rounds.length !== 1 ? "s" : ""})</p>
             <div className="relative">
               {/* vertical line */}
               <div className="absolute left-[17px] top-0 bottom-0 w-px bg-pastel-border" />
@@ -574,7 +546,6 @@ export default function Results() {
                 })}
               </div>
             </div>
-            )}
           </div>
         )}
 
