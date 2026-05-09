@@ -525,11 +525,6 @@ export default function Results() {
                             </div>
                           );
                         })}
-                        {r.eliminated?.length > 0 && (
-                          <p className="text-[11px] text-pastel-rose mt-2.5 font-semibold tracking-wide">
-                            Eliminated → {r.eliminated.map((e) => e.label).join(", ")}
-                          </p>
-                        )}
                         {isLast && winner && (
                           <p className="text-[11px] text-pastel-gold mt-2.5 font-semibold tracking-wide">
                             Winner → {winner.label}
