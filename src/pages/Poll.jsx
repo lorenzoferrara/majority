@@ -238,8 +238,8 @@ export default function Poll() {
   }, [confirming]);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 1 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 10 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
   );
 
   useEffect(() => () => {
