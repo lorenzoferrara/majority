@@ -177,9 +177,9 @@ export default function Results() {
   const exponentialScores = calculateExponentialScores();
 
   return (
-    <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-6 py-12">
-      <div className="relative w-full max-w-2xl">
-      <div className="border border-pastel-border bg-pastel-card px-16 py-14">
+    <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-3 sm:px-6 py-6 sm:py-12">
+      <div className="relative w-full max-w-2xl flex flex-col sm:flex-row gap-4">
+      <div className="flex-1 border border-pastel-border bg-pastel-card px-4 sm:px-16 py-6 sm:py-14">
 
         <Link
           to="/polls"
@@ -226,15 +226,15 @@ export default function Results() {
               <button
                 onClick={() => setTopN(Math.max(1, topN - 1))}
                 disabled={topN <= 1}
-                className="text-[10px] font-semibold px-2 py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="text-[10px] font-semibold px-2.5 py-1.5 sm:px-2 sm:py-1 min-h-9 min-w-9 sm:min-h-auto sm:min-w-auto border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 −
               </button>
-              <span className="text-[10px] font-semibold w-8 text-center">{topN}</span>
+              <span className="text-[10px] font-semibold w-10 sm:w-8 text-center">{topN}</span>
               <button
                 onClick={() => setTopN(Math.min(options.length, topN + 1))}
                 disabled={topN >= options.length}
-                className="text-[10px] font-semibold px-2 py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="text-[10px] font-semibold px-2.5 py-1.5 sm:px-2 sm:py-1 min-h-9 min-w-9 sm:min-h-auto sm:min-w-auto border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 +
               </button>
@@ -246,15 +246,15 @@ export default function Results() {
               <button
                 onClick={() => setDecayFactor(Math.max(1.1, Math.round((decayFactor - 0.1) * 10) / 10))}
                 disabled={decayFactor <= 1.1}
-                className="text-[10px] font-semibold px-2 py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="text-[10px] font-semibold px-2.5 py-1.5 sm:px-2 sm:py-1 min-h-9 min-w-9 sm:min-h-auto sm:min-w-auto border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 −
               </button>
-              <span className="text-[10px] font-semibold w-12 text-center">{decayFactor.toFixed(1)}</span>
+              <span className="text-[10px] font-semibold w-14 sm:w-12 text-center">{decayFactor.toFixed(1)}</span>
               <button
                 onClick={() => setDecayFactor(Math.round((decayFactor + 0.1) * 10) / 10)}
                 disabled={decayFactor >= 5}
-                className="text-[10px] font-semibold px-2 py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="text-[10px] font-semibold px-2.5 py-1.5 sm:px-2 sm:py-1 min-h-9 min-w-9 sm:min-h-auto sm:min-w-auto border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 +
               </button>
@@ -446,17 +446,18 @@ export default function Results() {
               </button>
             </div>
             {showExponentialInfo && (
-              <div className="mt-4 p-4 bg-pastel-card border border-pastel-border rounded">
-                <div className="flex items-start justify-between mb-3">
+              <div className="mt-4 p-3 sm:p-4 bg-pastel-card border border-pastel-border rounded overflow-auto max-h-96">
+                <div className="flex items-start justify-between mb-3 gap-2">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-pastel-mid">Score Decay by Position</p>
                   <button
                     onClick={() => setShowExponentialInfo(false)}
-                    className="text-pastel-muted hover:text-pastel-ink text-xs"
+                    className="text-pastel-muted hover:text-pastel-ink text-xs flex-shrink-0"
                   >
                     ✕
                   </button>
                 </div>
-                <svg viewBox="0 0 280 140" className="w-full max-w-sm border border-pastel-border bg-white rounded">
+                <div className="overflow-x-auto -mx-3 sm:-mx-4 px-3 sm:px-4">
+                  <svg viewBox="0 0 280 140" className="w-full min-w-64 border border-pastel-border bg-white rounded">
                   {/* Grid lines */}
                   <line x1="30" y1="110" x2="270" y2="110" stroke="#e5e1d8" strokeWidth="1" />
                   {/* Y axis */}
@@ -592,8 +593,8 @@ export default function Results() {
 
       </div>
 
-      {/* Voters sidebar */}
-      <div className="absolute top-0 left-full ml-4 w-44 border border-pastel-border bg-pastel-card px-4 py-5">
+      {/* Voters sidebar - hidden on mobile, shown on desktop */}
+      <div className="hidden sm:block w-44 border border-pastel-border bg-pastel-card px-4 py-5 flex-shrink-0">
         <p className="text-[9px] tracking-[0.45em] uppercase text-pastel-gold font-semibold mb-4">Voted</p>
         {sortedVoters.length === 0 ? (
           <p className="text-[11px] text-pastel-muted italic">No votes yet.</p>
