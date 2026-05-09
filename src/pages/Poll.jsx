@@ -94,7 +94,7 @@ function SortableOption({
     <div
       ref={handleNodeRef}
       style={{...style, touchAction: 'none'}}
-      className={`flex items-center gap-3 px-4 py-3 ${isLocked ? "bg-[#ababa6] text-white" : "bg-[#f4f4f2]"} ${isLocked ? "cursor-default" : "cursor-grab"} select-none transition-all duration-150 border-l-2 ${accent.bar.replace('bg-', 'border-')} ${
+      className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 ${isLocked ? "bg-[#ababa6] text-white" : "bg-[#f4f4f2]"} ${isLocked ? "cursor-default" : "cursor-grab"} select-none transition-all duration-150 border-l-2 ${accent.bar.replace('bg-', 'border-')} ${
         isDragging ? "opacity-50 shadow-lg" : isLocked ? "" : "hover:bg-[#eeeeeb]"
       }`}
       {...attributes}
@@ -105,14 +105,14 @@ function SortableOption({
 
       {/* label */}
       <div className="flex-1 min-w-0">
-        <p className={`font-display text-lg leading-snug font-semibold ${isLocked ? "text-white" : "text-pastel-ink"}`}>{option.label}</p>
+        <p className={`font-display text-base sm:text-lg leading-snug font-semibold ${isLocked ? "text-white" : "text-pastel-ink"}`}>{option.label}</p>
         {option.description && (
-          <p className={`text-sm mt-0.5 truncate ${isLocked ? "text-[#f4f3ef]" : "text-pastel-mid"}`}>{option.description}</p>
+          <p className={`text-xs sm:text-sm mt-0.5 truncate ${isLocked ? "text-[#f4f3ef]" : "text-pastel-mid"}`}>{option.description}</p>
         )}
       </div>
 
       {/* drag handle */}
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
         {isBookClaimed ? (
           <button
             type="button"
@@ -121,7 +121,7 @@ function SortableOption({
               event.stopPropagation();
               onUndoBookClaim(option.id);
             }}
-            className="px-2 py-1 border border-[#f1efe7] text-[9px] leading-tight tracking-[0.18em] font-bold text-[#f8f7f2] uppercase hover:bg-[#9f9f99] transition-colors"
+            className="px-1.5 sm:px-2 py-0.5 sm:py-1 border border-[#f1efe7] text-[7px] sm:text-[9px] leading-tight tracking-[0.15em] sm:tracking-[0.18em] font-bold text-[#f8f7f2] uppercase hover:bg-[#9f9f99] transition-colors whitespace-nowrap"
           >
             Undo
           </button>
@@ -133,7 +133,7 @@ function SortableOption({
               event.stopPropagation();
               onBookClaim(option.id);
             }}
-            className="px-2 py-1 text-[9px] leading-tight tracking-[0.18em] font-bold uppercase text-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-1.5 sm:px-2 py-0.5 sm:py-1 text-[7px] sm:text-[9px] leading-tight tracking-[0.12em] sm:tracking-[0.18em] font-bold uppercase text-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
             style={{ backgroundColor: "#ccdabc", color: "#35533a" }}
           >
             <span className="block">This Is</span>
@@ -236,11 +236,6 @@ export default function Poll() {
     if (!confirming) return;
     confirmSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [confirming]);
-
-  // const sensors = useSensors(
-  //   useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-  //   useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
-  // );
 
   const sensors = useSensors(
     useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 8 } })
@@ -431,8 +426,8 @@ export default function Poll() {
   }
 
   return (
-    <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-6 py-12">
-      <div className="w-full max-w-2xl border border-pastel-border bg-pastel-card px-16 py-14">
+    <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-3 sm:px-6 py-6 sm:py-12">
+      <div className="w-full max-w-2xl border border-pastel-border bg-pastel-card px-4 sm:px-16 py-6 sm:py-14">
 
         <Link
           to="/polls"
@@ -442,10 +437,10 @@ export default function Poll() {
           <span aria-hidden="true" className="text-xl leading-none">←</span>
         </Link>
 
-        <header className="mb-14">
-          <p className="text-xs tracking-[0.5em] uppercase text-pastel-gold font-semibold mb-5">Your Ballot</p>
-          <h1 className="font-display text-5xl font-bold text-pastel-ink leading-none">{formatMonth(poll.month)}</h1>
-          <p className="text-xs tracking-[0.25em] uppercase text-pastel-mid font-medium mt-4">Drag to rank · Submit when ready</p>
+        <header className="mb-10 sm:mb-14">
+          <p className="text-xs tracking-[0.5em] uppercase text-pastel-gold font-semibold mb-3 sm:mb-5">Your Ballot</p>
+          <h1 className="font-display text-3xl sm:text-5xl font-bold text-pastel-ink leading-none">{formatMonth(poll.month)}</h1>
+          <p className="text-[11px] sm:text-xs tracking-[0.25em] uppercase text-pastel-mid font-medium mt-3 sm:mt-4">Drag to rank · Submit when ready</p>
         </header>
 
         {poll.status === "CLOSED" ? (
@@ -532,14 +527,14 @@ export default function Poll() {
               </div>
             )}
 
-            <div className="mt-10 flex items-center justify-between">
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4">
               <Link to="/polls" className="text-xs tracking-[0.35em] uppercase font-semibold text-pastel-mid hover:text-pastel-ink transition-colors">
                 ← Back
               </Link>
               {!submitted && !confirming && (
                 <button
                   onClick={() => setConfirming(true)}
-                  className="py-3 px-8 bg-pastel-ink text-pastel-card text-xs font-bold tracking-[0.35em] uppercase hover:bg-pastel-gold hover:text-pastel-ink transition-colors"
+                  className="w-full sm:w-auto py-3 px-6 sm:px-8 bg-pastel-ink text-pastel-card text-xs font-bold tracking-[0.25em] sm:tracking-[0.35em] uppercase hover:bg-pastel-gold hover:text-pastel-ink transition-colors"
                 >
                   Submit Ballot
                 </button>
