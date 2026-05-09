@@ -427,8 +427,8 @@ export default function Poll() {
   }
 
   return (
-    <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-3 sm:px-6 py-6 sm:py-12">
-      <div className="w-full max-w-2xl border border-pastel-border bg-pastel-card px-4 sm:px-16 py-6 sm:py-14">
+    <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-6 py-12">
+      <div className="w-full max-w-2xl border border-pastel-border bg-pastel-card px-16 py-14">
 
         <Link
           to="/polls"
@@ -438,10 +438,10 @@ export default function Poll() {
           <span aria-hidden="true" className="text-xl leading-none">←</span>
         </Link>
 
-        <header className="mb-10 sm:mb-14">
-          <p className="text-xs tracking-[0.5em] uppercase text-pastel-gold font-semibold mb-3 sm:mb-5">Your Ballot</p>
-          <h1 className="font-display text-3xl sm:text-5xl font-bold text-pastel-ink leading-none">{formatMonth(poll.month)}</h1>
-          <p className="text-[11px] sm:text-xs tracking-[0.25em] uppercase text-pastel-mid font-medium mt-3 sm:mt-4">Drag to rank · Submit when ready</p>
+        <header className="mb-14">
+          <p className="text-xs tracking-[0.5em] uppercase text-pastel-gold font-semibold mb-5">Your Ballot</p>
+          <h1 className="font-display text-5xl font-bold text-pastel-ink leading-none">{formatMonth(poll.month)}</h1>
+          <p className="text-xs tracking-[0.25em] uppercase text-pastel-mid font-medium mt-4">Drag to rank · Submit when ready</p>
         </header>
 
         {poll.status === "CLOSED" ? (
