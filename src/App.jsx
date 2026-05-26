@@ -96,9 +96,7 @@ export default function App() {
           </section>
 
           <section className="md:pl-5 lg:pl-6">
-            <div className="border border-pastel-border/80 bg-pastel-option px-5 sm:px-7 py-6 sm:py-8 relative">
-              <div aria-hidden className="absolute right-5 top-5 h-4 w-4 rounded-full border border-pastel-gold/60" />
-
+            <div className="border-4 border-pastel-ink/40 bg-white px-5 sm:px-7 py-6 sm:py-8 relative shadow-[4px_4px_0_0_rgba(92,32,0,0.15)]">
               <div className="mb-8">
               <h2 className="font-display text-4xl sm:text-5xl font-light text-pastel-ink leading-none mb-3">Enter</h2>
               <p className="text-sm tracking-wide text-pastel-mid">Members only - sign in to vote.</p>
