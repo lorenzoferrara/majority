@@ -93,12 +93,10 @@ function SortableOption({
   return (
     <div
       ref={handleNodeRef}
-      style={{...style, touchAction: 'none'}}
-      className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 ${isLocked ? "bg-[#ababa6] text-white" : "bg-[#f4f4f2]"} ${isLocked ? "cursor-default" : "cursor-grab"} select-none transition-all duration-150 border-l-2 ${accent.bar.replace('bg-', 'border-')} ${
+      style={{ ...style, touchAction: "pan-y" }}
+      className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 ${isLocked ? "bg-[#ababa6] text-white" : "bg-[#f4f4f2]"} cursor-default select-none transition-all duration-150 border-l-2 ${accent.bar.replace('bg-', 'border-')} ${
         isDragging ? "opacity-50 shadow-lg" : isLocked ? "" : "hover:bg-[#eeeeeb]"
       }`}
-      {...attributes}
-      {...(isLocked ? undefined : listeners)}
     >
       {/* rank badge */}
       <RankBadge index={index} />
@@ -140,7 +138,19 @@ function SortableOption({
             <span className="block">My Book</span>
           </button>
         )}
-        <span className={`text-base shrink-0 select-none ${isLocked ? "text-[#efede6]" : "text-pastel-mid"}`}>⠿</span>
+        {isLocked ? (
+          <span className={`text-base shrink-0 select-none ${isLocked ? "text-[#efede6]" : "text-pastel-mid"}`}>⠿</span>
+        ) : (
+          <button
+            type="button"
+            className="text-base shrink-0 select-none text-pastel-mid cursor-grab active:cursor-grabbing touch-none"
+            aria-label={`Drag to reorder ${option.label}`}
+            {...attributes}
+            {...listeners}
+          >
+            ⠿
+          </button>
+        )}
       </div>
     </div>
   );
