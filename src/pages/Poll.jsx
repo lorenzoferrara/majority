@@ -14,6 +14,7 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
 
 const BOOK_MOVE_DURATION_MS = 1400;
@@ -495,7 +496,12 @@ export default function Poll() {
                 })}
               </div>
             ) : (
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                modifiers={[restrictToVerticalAxis]}
+                onDragEnd={handleDragEnd}
+              >
                 <SortableContext items={ranking.map((o) => o.id)} strategy={verticalListSortingStrategy}>
                   <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-2">
                     {ranking.map((option, index) => (
