@@ -3,7 +3,6 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import App from "./App";
 import ProtectedRoute from "./components/ProtectedRoute";
-import SignIn from "./pages/SignIn";
 import Admin from "./pages/Admin";
 import Polls from "./pages/Polls";
 import Poll from "./pages/Poll";
@@ -15,7 +14,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/sign-in" element={<App />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/admin" element={<Admin />} />
           <Route path="/polls" element={<Polls />} />

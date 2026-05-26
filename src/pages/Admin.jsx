@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSSE } from "../hooks/useSSE";
+import ManagePollModal from "../components/ManagePollModal";
 
 const STATUS_CYCLE = { OPEN: "CLOSED", CLOSED: "OPEN" };
 const STATUS_COLORS = {
@@ -15,6 +16,7 @@ export default function AdminPage() {
   const [pollsLoading, setPollsLoading] = useState(true);
   const [pollsError, setPollsError] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null); // pollId pending deletion
+  const [managePoll, setManagePoll] = useState(null);
 
   function formatMonth(monthStr) {
     if (monthStr.includes('Demo')) {
@@ -80,6 +82,14 @@ export default function AdminPage() {
     }
   }
 
+  function handleBallotReset(pollId) {
+    setPolls((prev) => prev.map((p) => {
+      if (p.id !== pollId) return p;
+      const current = p._count?.ballots ?? 0;
+      return { ...p, _count: { ...p._count, ballots: Math.max(0, current - 1) } };
+    }));
+  }
+
 
   return (
     <main className="min-h-screen bg-pastel-bg flex items-start justify-center px-3 sm:px-6 py-6 sm:py-12">
@@ -131,12 +141,12 @@ export default function AdminPage() {
 
                   {/* Right: actions */}
                   <div className="flex items-center gap-1 sm:gap-3 shrink-0">
-                    <Link
-                      to={`/polls/${poll.id}`}
+                    <button
+                      onClick={() => setManagePoll(poll)}
                       className="text-[8px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.2em] uppercase text-pastel-mid hover:text-pastel-gold transition-colors whitespace-nowrap px-1.5 sm:px-0"
                     >
-                      View
-                    </Link>
+                      Manage
+                    </button>
                     <button
                       onClick={() => cycleStatus(poll)}
                       title={`Set as ${STATUS_CYCLE[poll.status] === "OPEN" ? "Open" : "Closed"}`}
@@ -160,7 +170,7 @@ export default function AdminPage() {
         {/* Footer */}
         <p className="mt-10 text-center text-[10px] sm:text-[11px] tracking-[0.2em] uppercase text-pastel-muted">
           <Link to="/polls" className="text-[10px] sm:text-[11px] tracking-[0.25em] sm:tracking-[0.35em] uppercase text-pastel-mid hover:text-pastel-gold transition-colors duration-200">
-            View Polls →
+            Back to Polls →
           </Link>
           <span className="text-pastel-border mx-2 sm:mx-3">·</span>
           <span className="whitespace-nowrap">Majority · {new Date().getFullYear()}</span>
@@ -198,6 +208,14 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {managePoll && (
+        <ManagePollModal
+          poll={managePoll}
+          onClose={() => setManagePoll(null)}
+          onBallotReset={handleBallotReset}
+        />
       )}
     </main>
   );

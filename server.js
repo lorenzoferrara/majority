@@ -7,6 +7,8 @@ const logoutHandler = require("./api/auth/logout");
 const meHandler = require("./api/auth/me");
 const pollsHandler = require("./api/polls");
 const pollHandler = require("./api/polls/[pollId]");
+const pollBallotsHandler = require("./api/polls/[pollId]/ballots");
+const pollBallotHandler = require("./api/polls/[pollId]/ballots/[ballotId]");
 const resultsHandler = require("./api/results/[pollId]");
 
 const app = express();
@@ -49,6 +51,15 @@ app.all("/api/polls", (req, res) => pollsHandler(req, res));
 app.all("/api/polls/:pollId", (req, res) => {
   req.query.pollId = req.params.pollId;
   pollHandler(req, res);
+});
+app.get("/api/polls/:pollId/ballots", (req, res) => {
+  req.query.pollId = req.params.pollId;
+  pollBallotsHandler(req, res);
+});
+app.delete("/api/polls/:pollId/ballots/:ballotId", (req, res) => {
+  req.query.pollId = req.params.pollId;
+  req.query.ballotId = req.params.ballotId;
+  pollBallotHandler(req, res);
 });
 app.get("/api/results/:pollId", (req, res) => {
   req.query.pollId = req.params.pollId;
