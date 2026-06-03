@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSSE } from "../hooks/useSSE";
 
+function emptyBookOption() {
+  return { label: "", author: "", pageLength: "", goodreadsScore: "" };
+}
+
 export default function PollsPage() {
   const navigate = useNavigate();
   const [polls, setPolls] = useState([]);
@@ -10,7 +14,7 @@ export default function PollsPage() {
   const [showAdmin, setShowAdmin] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [month, setMonth] = useState("");
-  const [options, setOptions] = useState([""]);
+  const [options, setOptions] = useState([emptyBookOption()]);
   const [creating, setCreating] = useState(false);
   const [createMessage, setCreateMessage] = useState("");
   const [focusIndex, setFocusIndex] = useState(null);
@@ -83,14 +87,14 @@ export default function PollsPage() {
     }
   }
 
-  function handleOptionChange(index, value) {
+  function handleOptionChange(index, field, value) {
     const next = [...options];
-    next[index] = value;
+    next[index] = { ...next[index], [field]: value };
     setOptions(next);
   }
 
   function addOption() {
-    setOptions([...options, ""]);
+    setOptions([...options, emptyBookOption()]);
     setFocusIndex(options.length);
   }
 
@@ -102,11 +106,21 @@ export default function PollsPage() {
     e.preventDefault();
     setCreating(true);
     setCreateMessage("");
+
+    const payloadOptions = options
+      .map((option) => ({
+        label: option.label.trim(),
+        author: option.author.trim() || null,
+        pageLength: option.pageLength === "" ? null : Number.parseInt(option.pageLength, 10),
+        goodreadsScore: option.goodreadsScore === "" ? null : Number.parseFloat(option.goodreadsScore),
+      }))
+      .filter((option) => option.label);
+
     const res = await fetch("/api/polls", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
-      body: JSON.stringify({ month, status: "OPEN", options: options.filter((o) => o.trim()) }),
+      body: JSON.stringify({ month, status: "OPEN", options: payloadOptions }),
     });
     if (res.status === 401) {
       navigate("/sign-in", { replace: true });
@@ -116,7 +130,7 @@ export default function PollsPage() {
     if (res.ok) {
       setCreateMessage("Poll created.");
       setMonth("");
-      setOptions([""]);
+      setOptions([emptyBookOption()]);
       setShowForm(false);
       loadPolls();
     } else {
@@ -253,19 +267,66 @@ export default function PollsPage() {
                 <label className={labelClass}>Books</label>
                 <div className="flex flex-col gap-4 sm:gap-5">
                   {options.map((opt, index) => (
-                    <div key={index} className="flex items-end gap-2 sm:gap-3">
-                      <input
-                        type="text"
-                        placeholder={`Book ${index + 1}`}
-                        value={opt}
-                        onChange={(e) => handleOptionChange(index, e.target.value)}
-                        className={`${inputClass} flex-1`}
-                        ref={(el) => (inputRefs.current[index] = el)}
-                        required
-                      />
+                    <div key={index} className="border border-pastel-border bg-pastel-option px-3 sm:px-4 py-3 sm:py-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-4">
+                        <div className="sm:col-span-12">
+                          <input
+                            type="text"
+                            placeholder={`Book ${index + 1} name`}
+                            value={opt.label}
+                            onChange={(e) => handleOptionChange(index, "label", e.target.value)}
+                            className={inputClass}
+                            ref={(el) => (inputRefs.current[index] = el)}
+                            required
+                          />
+                        </div>
+
+                        <div className="sm:col-span-6">
+                          <input
+                            type="text"
+                            placeholder="Author"
+                            value={opt.author}
+                            onChange={(e) => handleOptionChange(index, "author", e.target.value)}
+                            className={inputClass}
+                          />
+                        </div>
+
+                        <div className="sm:col-span-3">
+                          <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            placeholder="Pages"
+                            value={opt.pageLength}
+                            onChange={(e) => handleOptionChange(index, "pageLength", e.target.value)}
+                            className={inputClass}
+                          />
+                        </div>
+
+                        <div className="sm:col-span-3">
+                          <input
+                            type="number"
+                            min="0"
+                            max="5"
+                            step="0.01"
+                            placeholder="Goodreads"
+                            value={opt.goodreadsScore}
+                            onChange={(e) => handleOptionChange(index, "goodreadsScore", e.target.value)}
+                            className={inputClass}
+                          />
+                        </div>
+                      </div>
+
                       {options.length > 1 && (
-                        <button type="button" onClick={() => removeOption(index)}
-                          className="text-pastel-muted hover:text-pastel-ink transition-colors pb-2 text-lg leading-none shrink-0">×</button>
+                        <div className="mt-3 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => removeOption(index)}
+                            className="text-[10px] sm:text-[11px] tracking-[0.2em] uppercase text-pastel-muted hover:text-pastel-ink transition-colors"
+                          >
+                            Remove book
+                          </button>
+                        </div>
                       )}
                     </div>
                   ))}

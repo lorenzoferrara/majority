@@ -1,4 +1,4 @@
-// seed-demo.mjs  – creates a demo poll with 10 options and 8 voters
+// seed-demo.mjs  – creates a demo books poll with 10 options and 8 voters
 // Run with:  node seed-demo.mjs
 
 import { PrismaClient } from "@prisma/client";
@@ -8,16 +8,16 @@ const prisma = new PrismaClient();
 const MONTH = "Demo – April 2026";
 
 const OPTIONS = [
-  { label: "Oppenheimer",         description: "Christopher Nolan, 2023" },
-  { label: "Past Lives",          description: "Celine Song, 2023" },
-  { label: "Anatomy of a Fall",   description: "Justine Triet, 2023" },
-  { label: "The Zone of Interest",description: "Jonathan Glazer, 2023" },
-  { label: "Poor Things",         description: "Yorgos Lanthimos, 2023" },
-  { label: "All of Us Strangers", description: "Andrew Haigh, 2023" },
-  { label: "Saltburn",            description: "Emerald Fennell, 2023" },
-  { label: "Killers of the Flower Moon", description: "Martin Scorsese, 2023" },
-  { label: "Priscilla",           description: "Sofia Coppola, 2023" },
-  { label: "May December",        description: "Todd Haynes, 2023" },
+  { label: "The Seven Husbands of Evelyn Hugo", author: "Taylor Jenkins Reid", pageLength: 400, goodreadsScore: 4.46 },
+  { label: "Tomorrow, and Tomorrow, and Tomorrow", author: "Gabrielle Zevin", pageLength: 416, goodreadsScore: 4.14 },
+  { label: "The Midnight Library", author: "Matt Haig", pageLength: 304, goodreadsScore: 4.00 },
+  { label: "Project Hail Mary", author: "Andy Weir", pageLength: 496, goodreadsScore: 4.51 },
+  { label: "Demon Copperhead", author: "Barbara Kingsolver", pageLength: 560, goodreadsScore: 4.53 },
+  { label: "Piranesi", author: "Susanna Clarke", pageLength: 272, goodreadsScore: 4.22 },
+  { label: "Babel", author: "R. F. Kuang", pageLength: 560, goodreadsScore: 4.37 },
+  { label: "Sea of Tranquility", author: "Emily St. John Mandel", pageLength: 272, goodreadsScore: 4.08 },
+  { label: "The House in the Cerulean Sea", author: "TJ Klune", pageLength: 396, goodreadsScore: 4.35 },
+  { label: "Yellowface", author: "R. F. Kuang", pageLength: 336, goodreadsScore: 3.83 },
 ];
 
 // Each voter: name + their ranking (array of 0-based option indices, 1st = top choice)

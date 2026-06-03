@@ -31,6 +31,31 @@ const MEDALS = [
   { bg: "#CD7F32", shadow: "#8B4513", text: "#4B2000" }, // bronze
 ];
 
+function getOptionMeta(option) {
+  const parts = [];
+  if (option.pageLength) parts.push(`${option.pageLength} pages`);
+  if (option.goodreadsScore !== null && option.goodreadsScore !== undefined) {
+    parts.push(`Score ${Number(option.goodreadsScore).toFixed(2)}`);
+  }
+  if (parts.length > 0) return parts.join(" · ");
+  return option.description || "";
+}
+
+function getShortAuthorName(author) {
+  if (!author || typeof author !== "string") return "";
+
+  const parts = author.trim().split(/\s+/).filter(Boolean);
+  if (parts.length <= 1) return author.trim();
+
+  const surname = parts[parts.length - 1];
+  const initials = parts
+    .slice(0, -1)
+    .map((part) => `${part.replace(/\./g, "").charAt(0).toUpperCase()}.`)
+    .join(" ");
+
+  return `${initials} ${surname}`;
+}
+
 function RankBadge({ index }) {
   const medal = MEDALS[index];
   if (!medal) return (
@@ -85,6 +110,8 @@ function SortableOption({
         : transition,
   };
   const accent = rankAccent(index);
+  const optionMeta = getOptionMeta(option);
+  const shortAuthor = getShortAuthorName(option.author);
 
   const handleNodeRef = (node) => {
     setNodeRef(node);
@@ -104,9 +131,14 @@ function SortableOption({
 
       {/* label */}
       <div className="flex-1 min-w-0">
-        <p className={`font-display text-base sm:text-lg leading-snug font-semibold ${isLocked ? "text-white" : "text-pastel-ink"}`}>{option.label}</p>
-        {option.description && (
-          <p className={`text-xs sm:text-sm mt-0.5 truncate ${isLocked ? "text-[#f4f3ef]" : "text-pastel-mid"}`}>{option.description}</p>
+        <div className="inline-flex items-baseline gap-2 min-w-0 max-w-full">
+          <p className={`font-display text-base sm:text-lg leading-snug font-semibold min-w-0 truncate ${isLocked ? "text-white" : "text-pastel-ink"}`}>{option.label}</p>
+          {shortAuthor && (
+            <span className={`font-display text-base sm:text-lg leading-snug font-semibold min-w-0 truncate whitespace-nowrap ${isLocked ? "text-white" : "text-pastel-ink"}`}>- {shortAuthor}</span>
+          )}
+        </div>
+        {optionMeta && (
+          <p className={`text-[10px] sm:text-xs mt-0.5 truncate ${isLocked ? "text-[#f4f3ef]" : "text-pastel-mid"}`}>{optionMeta}</p>
         )}
       </div>
 
@@ -487,10 +519,20 @@ export default function Poll() {
               <div className="flex flex-col gap-2 opacity-60 pointer-events-none select-none">
                 {ranking.map((option, index) => {
                   const accent = rankAccent(index);
+                  const optionMeta = getOptionMeta(option);
+                  const shortAuthor = getShortAuthorName(option.author);
                   return (
-                    <div key={option.id} className={`flex items-center gap-3 px-4 py-3 bg-[#f4f4f2] border-l-2 ${accent.bar.replace('bg-', 'border-')}`}>
-                      <RankBadge index={index} />
-                      <p className="font-display text-lg font-semibold text-pastel-ink leading-snug">{option.label}</p>
+                    <div key={option.id} className={`flex items-start gap-3 px-4 py-3 bg-[#f4f4f2] border-l-2 ${accent.bar.replace('bg-', 'border-')}`}>
+                      <div className="pt-0.5">
+                        <RankBadge index={index} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="inline-flex items-baseline gap-2 min-w-0 max-w-full">
+                          <p className="font-display text-lg font-semibold text-pastel-ink leading-snug min-w-0 truncate">{option.label}</p>
+                          {shortAuthor && <span className="font-display text-lg font-semibold text-pastel-ink leading-snug min-w-0 truncate whitespace-nowrap">- {shortAuthor}</span>}
+                        </div>
+                        {optionMeta && <p className="text-[10px] text-pastel-mid truncate mt-0.5">{optionMeta}</p>}
+                      </div>
                     </div>
                   );
                 })}

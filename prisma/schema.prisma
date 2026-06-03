@@ -38,6 +38,9 @@ model Option {
   id          String   @id @default(cuid())
   pollId      String
   label       String                          // "Oppenheimer"
+  author      String?
+  pageLength  Int?
+  goodreadsScore Float?
   description String?
   imageUrl    String?
   order       Int      @default(0)            // display order (admin-controlled)
