@@ -23,7 +23,7 @@ model Poll {
   options  Option[]
   ballots  Ballot[]
 
-  @@unique([month])
+  @@index([month])
   @@index([status])
 }
 

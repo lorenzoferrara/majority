@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const { requireAuth } = require("../lib/auth");
+const { attachMonthOrdinals } = require("../lib/pollMonthLabels");
 
 const prisma = global.prisma ?? new PrismaClient();
 if (process.env.NODE_ENV !== "production") global.prisma = prisma;
@@ -73,7 +74,7 @@ module.exports = async function handler(req, res) {
           _count: { select: { ballots: true } },
         },
       });
-      return res.status(200).json(polls);
+      return res.status(200).json(attachMonthOrdinals(polls));
     } catch (err) {
       console.error(err);
       return res.status(500).json({ error: "Failed to fetch polls" });
@@ -109,9 +110,6 @@ module.exports = async function handler(req, res) {
       if (req.broadcast) req.broadcast("polls-changed", { action: "created", pollId: poll.id });
       return res.status(201).json(poll);
     } catch (err) {
-      if (err.code === "P2002") {
-        return res.status(409).json({ error: `A poll for ${month} already exists` });
-      }
       console.error(err);
       return res.status(500).json({ error: "Failed to create poll" });
     }

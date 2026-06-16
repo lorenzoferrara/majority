@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const { requireAuth } = require("../../lib/auth");
+const { fetchMonthOrdinalForPoll } = require("../../lib/pollMonthLabels");
 const prisma = new PrismaClient();
 
 // ── Instant-Runoff Voting (ported from lib/irv.ts) ───────────────────────────
@@ -85,6 +86,7 @@ module.exports = async (req, res) => {
   }));
 
   const { winner, winners: tiedWinners, rounds, isTie } = runIRV(rawBallots, optionIds);
+  const monthMeta = await fetchMonthOrdinalForPoll(prisma, poll);
 
   // Tally first-choice counts for display
   const firstChoiceCounts = {};
@@ -109,7 +111,7 @@ module.exports = async (req, res) => {
     .map((b) => ({ name: b.userId, submittedAt: b.submittedAt, ranking: b.choices.map((c) => c.optionId) }));
 
   return res.status(200).json({
-    poll: { id: poll.id, month: poll.month, status: poll.status },
+    poll: { id: poll.id, month: poll.month, status: poll.status, ...monthMeta },
     options: poll.options,
     totalBallots: poll.ballots.length,
     voters,

@@ -13,7 +13,9 @@ export default function PollsPage() {
   const [error, setError] = useState(null);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [pollNameMode, setPollNameMode] = useState("month"); // "month" | "custom"
   const [month, setMonth] = useState("");
+  const [customName, setCustomName] = useState("");
   const [options, setOptions] = useState([emptyBookOption()]);
   const [creating, setCreating] = useState(false);
   const [createMessage, setCreateMessage] = useState("");
@@ -24,7 +26,14 @@ export default function PollsPage() {
 
   useSSE({ "polls-changed": loadPolls });
 
+  function isDateMonth(str) {
+    return /^\d{4}-\d{2}$/.test(str) || str.includes('Demo');
+  }
+
   function formatMonth(monthStr) {
+    if (!isDateMonth(monthStr)) {
+      return monthStr;
+    }
     if (monthStr.includes('Demo')) {
       const parts = monthStr.split(' – ');
       if (parts.length === 2) {
@@ -34,6 +43,14 @@ export default function PollsPage() {
     }
     const date = new Date(monthStr + '-01');
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  }
+
+  function formatPollTitle(poll) {
+    const base = formatMonth(poll.month);
+    if ((poll.monthCount ?? 1) > 1) {
+      return `${base} (${poll.monthOrdinal ?? 1})`;
+    }
+    return base;
   }
 
   function loadPolls() {
@@ -107,6 +124,13 @@ export default function PollsPage() {
     setCreating(true);
     setCreateMessage("");
 
+    const pollName = pollNameMode === "month" ? month : customName;
+    if (!pollName || !pollName.trim()) {
+      setCreateMessage("Error: Poll name is required");
+      setCreating(false);
+      return;
+    }
+
     const payloadOptions = options
       .map((option) => ({
         label: option.label.trim(),
@@ -120,7 +144,7 @@ export default function PollsPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
-      body: JSON.stringify({ month, status: "OPEN", options: payloadOptions }),
+      body: JSON.stringify({ month: pollName, status: "OPEN", options: payloadOptions }),
     });
     if (res.status === 401) {
       navigate("/sign-in", { replace: true });
@@ -130,6 +154,7 @@ export default function PollsPage() {
     if (res.ok) {
       setCreateMessage("Poll created.");
       setMonth("");
+      setCustomName("");
       setOptions([emptyBookOption()]);
       setShowForm(false);
       loadPolls();
@@ -149,8 +174,9 @@ export default function PollsPage() {
     navigate("/sign-in", { replace: true });
   }
 
-  const inputClass = "w-full bg-transparent border-b border-pastel-border pb-2 sm:pb-2.5 text-xs sm:text-sm text-pastel-ink placeholder-pastel-muted focus:outline-none focus:border-pastel-gold transition-colors duration-200";
+  const inputClass = "w-full bg-transparent border-b border-pastel-border pb-2 sm:pb-2.5 text-xs sm:text-sm text-pastel-ink placeholder-[#8d8074] focus:outline-none focus:border-pastel-gold transition-colors duration-200";
   const labelClass = "block text-[9px] sm:text-[11px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-pastel-muted mb-2 sm:mb-3";
+  const optionCardClass = "border border-[#e9dfd4] bg-[linear-gradient(140deg,#fffdf9_0%,#f7efe2_100%)] px-3 sm:px-4 py-3 sm:py-4 shadow-[0_14px_32px_-24px_rgba(91,32,0,0.65)]";
 
   return (
     <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-3 sm:px-6 py-6 sm:py-12">
@@ -231,7 +257,7 @@ export default function PollsPage() {
                 >
                   <div className="min-w-0 flex-1">
                     <p className="font-display text-lg sm:text-2xl text-pastel-ink group-hover:text-pastel-gold transition-colors duration-200 leading-snug">
-                      {formatMonth(poll.month)}
+                      {formatPollTitle(poll)}
                     </p>
                     <span className={`text-[8px] sm:text-[9px] tracking-[0.15em] uppercase font-medium mt-1 inline-block ${
                       poll.status === "OPEN" ? "text-pastel-sage"
@@ -259,15 +285,49 @@ export default function PollsPage() {
 
             <form onSubmit={handleCreate} className="flex flex-col gap-9">
               <div>
-                <label className={labelClass}>Month</label>
-                <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className={inputClass} required />
+                <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="pollNameMode"
+                      value="month"
+                      checked={pollNameMode === "month"}
+                      onChange={() => setPollNameMode("month")}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-xs sm:text-sm text-pastel-mid">Month</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="pollNameMode"
+                      value="custom"
+                      checked={pollNameMode === "custom"}
+                      onChange={() => setPollNameMode("custom")}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-xs sm:text-sm text-pastel-mid">Custom Name</span>
+                  </label>
+                </div>
+
+                {pollNameMode === "month" ? (
+                  <>
+                    <label className={labelClass}>Month</label>
+                    <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className={inputClass} required />
+                  </>
+                ) : (
+                  <>
+                    <label className={labelClass}>Poll Name</label>
+                    <input type="text" placeholder="e.g. Winter Reading 2026" value={customName} onChange={(e) => setCustomName(e.target.value)} className={inputClass} required />
+                  </>
+                )}
               </div>
 
               <div>
                 <label className={labelClass}>Books</label>
                 <div className="flex flex-col gap-4 sm:gap-5">
                   {options.map((opt, index) => (
-                    <div key={index} className="border border-pastel-border bg-pastel-option px-3 sm:px-4 py-3 sm:py-4">
+                    <div key={index} className={optionCardClass}>
                       <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-4">
                         <div className="sm:col-span-12">
                           <input
@@ -322,7 +382,7 @@ export default function PollsPage() {
                           <button
                             type="button"
                             onClick={() => removeOption(index)}
-                            className="text-[10px] sm:text-[11px] tracking-[0.2em] uppercase text-pastel-muted hover:text-pastel-ink transition-colors"
+                            className="text-[10px] sm:text-[11px] tracking-[0.2em] uppercase text-pastel-mid hover:text-pastel-ink transition-colors"
                           >
                             Remove book
                           </button>

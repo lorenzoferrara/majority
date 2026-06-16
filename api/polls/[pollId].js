@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const { requireAuth } = require("../../lib/auth");
+const { fetchMonthOrdinalForPoll } = require("../../lib/pollMonthLabels");
 
 const prisma = global.prisma ?? new PrismaClient();
 if (process.env.NODE_ENV !== "production") global.prisma = prisma;
@@ -32,8 +33,9 @@ module.exports = async function handler(req, res) {
       if (!poll) return res.status(404).json({ error: "Poll not found" });
 
       const existingRanking = poll.ballots?.[0]?.choices.map((c) => c.optionId) ?? null;
+      const monthMeta = await fetchMonthOrdinalForPoll(prisma, poll);
 
-      return res.status(200).json({ ...poll, existingRanking });
+      return res.status(200).json({ ...poll, ...monthMeta, existingRanking });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ error: "Failed to fetch poll" });

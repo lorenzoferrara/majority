@@ -25,7 +25,14 @@ export default function Results() {
   const [topN, setTopN] = useState(2);
   const [decayFactor, setDecayFactor] = useState(1.8);
 
+  function isDateMonth(str) {
+    return /^\d{4}-\d{2}$/.test(str) || str.includes('Demo');
+  }
+
   function formatMonth(monthStr) {
+    if (!isDateMonth(monthStr)) {
+      return monthStr;
+    }
     if (monthStr.includes('Demo')) {
       const parts = monthStr.split(' – ');
       if (parts.length === 2) {
@@ -35,6 +42,14 @@ export default function Results() {
     }
     const date = new Date(monthStr + '-01');
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  }
+
+  function formatPollTitle(pollData) {
+    const base = formatMonth(pollData.month);
+    if ((pollData.monthCount ?? 1) > 1) {
+      return `${base} (${pollData.monthOrdinal ?? 1})`;
+    }
+    return base;
   }
 
   function loadResults() {
@@ -207,7 +222,7 @@ export default function Results() {
           <span className="text-[10px] sm:text-[11px] tracking-[0.4em] sm:tracking-[0.5em] uppercase text-pastel-gold font-medium whitespace-nowrap">Book Club</span>
           <div className="h-px flex-1 bg-pastel-border" />
         </div>
-        <h1 className="font-display text-3xl sm:text-5xl font-bold text-pastel-ink leading-none mb-1">{formatMonth(poll.month)}</h1>
+        <h1 className="font-display text-3xl sm:text-5xl font-bold text-pastel-ink leading-none mb-1">{formatPollTitle(poll)}</h1>
         <p className="text-[10px] sm:text-xs tracking-[0.3em] sm:tracking-[0.4em] uppercase text-pastel-muted mb-6">Results</p>
 
         {/* View mode toggle */}

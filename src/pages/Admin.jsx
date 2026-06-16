@@ -18,7 +18,14 @@ export default function AdminPage() {
   const [confirmDelete, setConfirmDelete] = useState(null); // pollId pending deletion
   const [managePoll, setManagePoll] = useState(null);
 
+  function isDateMonth(str) {
+    return /^\d{4}-\d{2}$/.test(str) || str.includes('Demo');
+  }
+
   function formatMonth(monthStr) {
+    if (!isDateMonth(monthStr)) {
+      return monthStr;
+    }
     if (monthStr.includes('Demo')) {
       const parts = monthStr.split(' – ');
       if (parts.length === 2) {
@@ -28,6 +35,14 @@ export default function AdminPage() {
     }
     const date = new Date(monthStr + '-01');
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  }
+
+  function formatPollTitle(poll) {
+    const base = formatMonth(poll.month);
+    if ((poll.monthCount ?? 1) > 1) {
+      return `${base} (${poll.monthOrdinal ?? 1})`;
+    }
+    return base;
   }
 
   // ── Load polls ──────────────────────────────────────────────────────────
@@ -127,7 +142,7 @@ export default function AdminPage() {
                 <div className="flex items-center justify-between gap-2 sm:gap-4">
                   {/* Left: month + meta */}
                   <div className="min-w-0 flex-1">
-                    <p className="font-display text-lg sm:text-xl text-pastel-ink leading-snug">{formatMonth(poll.month)}</p>
+                    <p className="font-display text-lg sm:text-xl text-pastel-ink leading-snug">{formatPollTitle(poll)}</p>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1">
                       <span className={`text-[9px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.2em] uppercase font-medium ${STATUS_COLORS[poll.status]}`}>
                         {poll.status}
