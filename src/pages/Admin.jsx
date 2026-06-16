@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSSE } from "../hooks/useSSE";
 import ManagePollModal from "../components/ManagePollModal";
+import EditPollModal from "../components/EditPollModal";
 
 const STATUS_CYCLE = { OPEN: "CLOSED", CLOSED: "OPEN" };
 const STATUS_COLORS = {
@@ -17,6 +18,7 @@ export default function AdminPage() {
   const [pollsError, setPollsError] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null); // pollId pending deletion
   const [managePoll, setManagePoll] = useState(null);
+  const [editPoll, setEditPoll] = useState(null);
 
   function isDateMonth(str) {
     return /^\d{4}-\d{2}$/.test(str) || str.includes('Demo');
@@ -105,6 +107,10 @@ export default function AdminPage() {
     }));
   }
 
+  function handlePollUpdated(updatedPoll) {
+    setPolls((prev) => prev.map((p) => (p.id === updatedPoll.id ? { ...p, ...updatedPoll } : p)));
+  }
+
 
   return (
     <main className="min-h-screen bg-pastel-bg flex items-start justify-center px-3 sm:px-6 py-6 sm:py-12">
@@ -139,7 +145,7 @@ export default function AdminPage() {
           <div className="mb-10">
             {polls.map((poll) => (
               <div key={poll.id} className="border-b border-pastel-border last:border-b-0 py-4 sm:py-5">
-                <div className="flex items-center justify-between gap-2 sm:gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                   {/* Left: month + meta */}
                   <div className="min-w-0 flex-1">
                     <p className="font-display text-lg sm:text-xl text-pastel-ink leading-snug">{formatPollTitle(poll)}</p>
@@ -155,23 +161,31 @@ export default function AdminPage() {
                   </div>
 
                   {/* Right: actions */}
-                  <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2.5 shrink-0 w-full sm:w-auto">
+                    <button
+                      onClick={() => setEditPoll(poll)}
+                      className="w-full sm:w-auto text-center text-[8px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.2em] uppercase text-[#8a6b53] border border-[#d8c8b7] bg-[#fcf6ee] px-2 sm:px-3 py-1 sm:py-1.5 hover:bg-[#f4e8da] hover:border-[#c7ad96] transition-colors whitespace-nowrap"
+                    >
+                      Edit Poll
+                    </button>
                     <button
                       onClick={() => setManagePoll(poll)}
-                      className="text-[8px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.2em] uppercase text-pastel-mid hover:text-pastel-gold transition-colors whitespace-nowrap px-1.5 sm:px-0"
+                      className="w-full sm:w-auto text-center text-[8px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.2em] uppercase text-[#6f5846] border border-[#d6c9b9] bg-[linear-gradient(140deg,#fffdf9_0%,#f6eee2_100%)] px-2.5 sm:px-3 py-1 sm:py-1.5 leading-tight hover:brightness-[0.98] transition-all"
                     >
-                      Manage
+                      <span className="inline-flex flex-col items-center">
+                        <span>Manage Votes</span>
+                      </span>
                     </button>
                     <button
                       onClick={() => cycleStatus(poll)}
                       title={`Set as ${STATUS_CYCLE[poll.status] === "OPEN" ? "Open" : "Closed"}`}
-                      className="text-[8px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.2em] uppercase text-pastel-mid border border-pastel-border px-1.5 sm:px-3 py-0.5 sm:py-1.5 hover:border-pastel-gold hover:text-pastel-gold transition-colors whitespace-nowrap"
+                      className="w-full sm:w-auto text-center text-[8px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.2em] uppercase text-pastel-card bg-pastel-ink border border-pastel-ink px-2.5 sm:px-3 py-1 sm:py-1.5 hover:opacity-85 transition-opacity whitespace-nowrap"
                     >
                       {STATUS_CYCLE[poll.status] === "OPEN" ? "Open" : "Close"}
                     </button>
                     <button
                       onClick={() => setConfirmDelete(poll.id)}
-                      className="text-[8px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.2em] uppercase text-pastel-muted hover:text-pastel-rose transition-colors whitespace-nowrap px-1.5 sm:px-0"
+                      className="w-full sm:w-auto text-center text-[8px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.2em] uppercase text-[#9e8774] border border-transparent px-2 sm:px-2.5 py-1 sm:py-1.5 hover:text-pastel-rose hover:border-pastel-rose/30 hover:bg-pastel-rose/10 transition-colors whitespace-nowrap"
                     >
                       Delete
                     </button>
@@ -230,6 +244,14 @@ export default function AdminPage() {
           poll={managePoll}
           onClose={() => setManagePoll(null)}
           onBallotReset={handleBallotReset}
+        />
+      )}
+
+      {editPoll && (
+        <EditPollModal
+          poll={editPoll}
+          onClose={() => setEditPoll(null)}
+          onPollUpdated={handlePollUpdated}
         />
       )}
     </main>

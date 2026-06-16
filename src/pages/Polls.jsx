@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSSE } from "../hooks/useSSE";
-
-function emptyBookOption() {
-  return { label: "", author: "", pageLength: "", goodreadsScore: "" };
-}
+import CreatePollModal from "../components/CreatePollModal";
 
 export default function PollsPage() {
   const navigate = useNavigate();
@@ -12,17 +9,8 @@ export default function PollsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAdmin, setShowAdmin] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [pollNameMode, setPollNameMode] = useState("month"); // "month" | "custom"
-  const [month, setMonth] = useState("");
-  const [customName, setCustomName] = useState("");
-  const [options, setOptions] = useState([emptyBookOption()]);
-  const [creating, setCreating] = useState(false);
-  const [createMessage, setCreateMessage] = useState("");
-  const [focusIndex, setFocusIndex] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const clubTapRef = useRef({ count: 0, lastAt: 0 });
-  const inputRefs = useRef([]);
-  const formSectionRef = useRef(null);
 
   useSSE({ "polls-changed": loadPolls });
 
@@ -75,21 +63,6 @@ export default function PollsPage() {
 
   useEffect(() => { loadPolls(); }, []);
 
-  useEffect(() => {
-    if (focusIndex !== null && inputRefs.current[focusIndex]) {
-      inputRefs.current[focusIndex].focus();
-      setFocusIndex(null);
-    }
-  }, [focusIndex, options.length]);
-
-  useEffect(() => {
-    if (showForm && formSectionRef.current) {
-      requestAnimationFrame(() => {
-        formSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    }
-  }, [showForm]);
-
   function handleBookClubTap() {
     if (showAdmin) return;
 
@@ -104,67 +77,6 @@ export default function PollsPage() {
     }
   }
 
-  function handleOptionChange(index, field, value) {
-    const next = [...options];
-    next[index] = { ...next[index], [field]: value };
-    setOptions(next);
-  }
-
-  function addOption() {
-    setOptions([...options, emptyBookOption()]);
-    setFocusIndex(options.length);
-  }
-
-  function removeOption(index) {
-    setOptions(options.filter((_, i) => i !== index));
-  }
-
-  async function handleCreate(e) {
-    e.preventDefault();
-    setCreating(true);
-    setCreateMessage("");
-
-    const pollName = pollNameMode === "month" ? month : customName;
-    if (!pollName || !pollName.trim()) {
-      setCreateMessage("Error: Poll name is required");
-      setCreating(false);
-      return;
-    }
-
-    const payloadOptions = options
-      .map((option) => ({
-        label: option.label.trim(),
-        author: option.author.trim() || null,
-        pageLength: option.pageLength === "" ? null : Number.parseInt(option.pageLength, 10),
-        goodreadsScore: option.goodreadsScore === "" ? null : Number.parseFloat(option.goodreadsScore),
-      }))
-      .filter((option) => option.label);
-
-    const res = await fetch("/api/polls", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "same-origin",
-      body: JSON.stringify({ month: pollName, status: "OPEN", options: payloadOptions }),
-    });
-    if (res.status === 401) {
-      navigate("/sign-in", { replace: true });
-      setCreating(false);
-      return;
-    }
-    if (res.ok) {
-      setCreateMessage("Poll created.");
-      setMonth("");
-      setCustomName("");
-      setOptions([emptyBookOption()]);
-      setShowForm(false);
-      loadPolls();
-    } else {
-      const data = await res.json();
-      setCreateMessage("Error: " + data.error);
-    }
-    setCreating(false);
-  }
-
   async function handleLogout() {
     try {
       await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
@@ -173,10 +85,6 @@ export default function PollsPage() {
     }
     navigate("/sign-in", { replace: true });
   }
-
-  const inputClass = "w-full bg-transparent border-b border-pastel-border pb-2 sm:pb-2.5 text-xs sm:text-sm text-pastel-ink placeholder-[#8d8074] focus:outline-none focus:border-pastel-gold transition-colors duration-200";
-  const labelClass = "block text-[9px] sm:text-[11px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-pastel-muted mb-2 sm:mb-3";
-  const optionCardClass = "border border-[#e9dfd4] bg-[linear-gradient(140deg,#fffdf9_0%,#f7efe2_100%)] px-3 sm:px-4 py-3 sm:py-4 shadow-[0_14px_32px_-24px_rgba(91,32,0,0.65)]";
 
   return (
     <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-3 sm:px-6 py-6 sm:py-12">
@@ -202,10 +110,10 @@ export default function PollsPage() {
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
             <button
               type="button"
-              onClick={() => { setShowForm((v) => !v); setCreateMessage(""); }}
+              onClick={() => setShowCreateModal(true)}
               className="text-[9px] sm:text-[10px] tracking-[0.25em] sm:tracking-[0.35em] uppercase text-pastel-gold hover:opacity-70 transition-opacity font-medium whitespace-nowrap"
             >
-              {showForm ? "− Cancel" : "+ New Poll"}
+              + New Poll
             </button>
             <button
               type="button"
@@ -275,146 +183,17 @@ export default function PollsPage() {
           </>
         )}
 
-        {showForm && (
-          <div ref={formSectionRef}>
-            <div className="flex items-center gap-3 my-8">
-              <div className="h-px flex-1 bg-pastel-border" />
-              <span className="text-[11px] tracking-[0.4em] uppercase text-pastel-muted">New Poll</span>
-              <div className="h-px flex-1 bg-pastel-border" />
-            </div>
-
-            <form onSubmit={handleCreate} className="flex flex-col gap-9">
-              <div>
-                <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="pollNameMode"
-                      value="month"
-                      checked={pollNameMode === "month"}
-                      onChange={() => setPollNameMode("month")}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-xs sm:text-sm text-pastel-mid">Month</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="pollNameMode"
-                      value="custom"
-                      checked={pollNameMode === "custom"}
-                      onChange={() => setPollNameMode("custom")}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-xs sm:text-sm text-pastel-mid">Custom Name</span>
-                  </label>
-                </div>
-
-                {pollNameMode === "month" ? (
-                  <>
-                    <label className={labelClass}>Month</label>
-                    <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className={inputClass} required />
-                  </>
-                ) : (
-                  <>
-                    <label className={labelClass}>Poll Name</label>
-                    <input type="text" placeholder="e.g. Winter Reading 2026" value={customName} onChange={(e) => setCustomName(e.target.value)} className={inputClass} required />
-                  </>
-                )}
-              </div>
-
-              <div>
-                <label className={labelClass}>Books</label>
-                <div className="flex flex-col gap-4 sm:gap-5">
-                  {options.map((opt, index) => (
-                    <div key={index} className={optionCardClass}>
-                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-4">
-                        <div className="sm:col-span-12">
-                          <input
-                            type="text"
-                            placeholder={`Book Name`}
-                            value={opt.label}
-                            onChange={(e) => handleOptionChange(index, "label", e.target.value)}
-                            className={inputClass}
-                            ref={(el) => (inputRefs.current[index] = el)}
-                            required
-                          />
-                        </div>
-
-                        <div className="sm:col-span-6">
-                          <input
-                            type="text"
-                            placeholder="Author"
-                            value={opt.author}
-                            onChange={(e) => handleOptionChange(index, "author", e.target.value)}
-                            className={inputClass}
-                          />
-                        </div>
-
-                        <div className="sm:col-span-2">
-                          <input
-                            type="number"
-                            min="1"
-                            step="1"
-                            placeholder="Pages"
-                            value={opt.pageLength}
-                            onChange={(e) => handleOptionChange(index, "pageLength", e.target.value)}
-                            className={inputClass}
-                          />
-                        </div>
-
-                        <div className="sm:col-span-4">
-                          <input
-                            type="number"
-                            min="0"
-                            max="5"
-                            step="0.01"
-                            placeholder="Goodreads Score"
-                            value={opt.goodreadsScore}
-                            onChange={(e) => handleOptionChange(index, "goodreadsScore", e.target.value)}
-                            className={inputClass}
-                          />
-                        </div>
-                      </div>
-
-                      {options.length > 1 && (
-                        <div className="mt-3 flex justify-end">
-                          <button
-                            type="button"
-                            onClick={() => removeOption(index)}
-                            className="text-[10px] sm:text-[11px] tracking-[0.2em] uppercase text-pastel-mid hover:text-pastel-ink transition-colors"
-                          >
-                            Remove book
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <button type="button" onClick={addOption}
-                  className="mt-4 sm:mt-5 text-[10px] sm:text-[11px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-pastel-gold hover:opacity-70 font-medium transition-opacity">
-                  + Add book
-                </button>
-              </div>
-
-              <button type="submit" disabled={creating}
-                className="mt-2 w-full py-2.5 sm:py-3.5 bg-pastel-ink text-pastel-card text-[10px] sm:text-[11px] font-semibold tracking-[0.25em] sm:tracking-[0.35em] uppercase hover:opacity-80 transition-opacity disabled:opacity-30">
-                {creating ? "Creating…" : "Create Poll"}
-              </button>
-            </form>
-
-            {createMessage && (
-              <p className={`mt-6 text-sm tracking-wide ${createMessage.startsWith("Error") ? "text-red-500" : "text-pastel-mid"}`}>
-                {createMessage}
-              </p>
-            )}
-          </div>
-        )}
-
         <p className="mt-10 text-center text-[11px] tracking-[0.2em] uppercase text-pastel-muted">
           Majority · {new Date().getFullYear()}
         </p>
       </div>
+
+      {showCreateModal && (
+        <CreatePollModal
+          onClose={() => setShowCreateModal(false)}
+          onPollCreated={() => loadPolls()}
+        />
+      )}
     </main>
   );
 }

@@ -97,7 +97,7 @@ export default function App() {
 
           <section className="md:pl-5 lg:pl-6">
             <div className="border-4 border-pastel-ink/40 bg-white px-5 sm:px-7 py-6 sm:py-8 relative shadow-[4px_4px_0_0_rgba(92,32,0,0.15)]">
-              <div className="mb-8">
+              <div className="hidden md:block mb-8">
               <h2 className="font-display text-4xl sm:text-5xl font-light text-pastel-ink leading-none mb-3">Enter</h2>
               <p className="text-sm tracking-wide text-pastel-mid">Members only - sign in to vote.</p>
               </div>

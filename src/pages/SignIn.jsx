@@ -72,7 +72,7 @@ export default function SignIn() {
 
         <div className="mb-10">
           <h1 className="font-display text-6xl font-light text-pastel-ink leading-none mb-3">Welcome</h1>
-          <p className="text-sm tracking-wide text-pastel-mid">Members only — enter to vote.</p>
+          <p className="hidden 2xl:block text-sm tracking-wide text-pastel-mid">Members only — enter to vote.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-8">
@@ -116,7 +116,7 @@ export default function SignIn() {
             disabled={loading}
             className="mt-2 py-3.5 bg-pastel-ink text-pastel-card text-xs font-semibold tracking-[0.35em] uppercase hover:bg-pastel-gold hover:text-pastel-ink transition-colors duration-200 disabled:opacity-40"
           >
-            {loading ? "…" : "Enter"}
+            {loading ? "…" : "Sign In"}
           </button>
         </form>
 
