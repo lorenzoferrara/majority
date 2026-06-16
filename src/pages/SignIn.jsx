@@ -13,7 +13,7 @@ export default function SignIn() {
   } = useSignIn();
 
   return (
-    <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-4 sm:px-6 py-4 sm:py-12">
+    <main className="h-dvh sm:min-h-screen overflow-hidden bg-pastel-bg flex items-center justify-center px-4 sm:px-6 py-0 sm:py-12">
       <style>{`
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
