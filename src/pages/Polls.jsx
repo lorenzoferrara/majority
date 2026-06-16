@@ -332,7 +332,7 @@ export default function PollsPage() {
                         <div className="sm:col-span-12">
                           <input
                             type="text"
-                            placeholder={`Book ${index + 1} name`}
+                            placeholder={`Book Name`}
                             value={opt.label}
                             onChange={(e) => handleOptionChange(index, "label", e.target.value)}
                             className={inputClass}
