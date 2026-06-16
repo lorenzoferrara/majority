@@ -351,7 +351,7 @@ export default function PollsPage() {
                           />
                         </div>
 
-                        <div className="sm:col-span-3">
+                        <div className="sm:col-span-2">
                           <input
                             type="number"
                             min="1"
@@ -363,13 +363,13 @@ export default function PollsPage() {
                           />
                         </div>
 
-                        <div className="sm:col-span-3">
+                        <div className="sm:col-span-4">
                           <input
                             type="number"
                             min="0"
                             max="5"
                             step="0.01"
-                            placeholder="Goodreads"
+                            placeholder="Goodreads Score"
                             value={opt.goodreadsScore}
                             onChange={(e) => handleOptionChange(index, "goodreadsScore", e.target.value)}
                             className={inputClass}
