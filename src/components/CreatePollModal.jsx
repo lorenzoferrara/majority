@@ -145,9 +145,8 @@ export default function CreatePollModal({ onClose, onPollCreated }) {
           </div>
 
           <div>
-            <div className="flex items-baseline gap-2 mb-3 sm:mb-4">
+            <div className="flex items-baseline gap-2 mb-1 sm:mb-2">
               <label className={labelClass}>Books</label>
-              <span className="text-[9px] text-pastel-muted italic">* required, others optional</span>
             </div>
 
             <div className="flex flex-col gap-4 sm:gap-5">
