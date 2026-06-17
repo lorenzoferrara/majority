@@ -131,10 +131,10 @@ function SortableOption({
 
       {/* label */}
       <div className="flex-1 min-w-0">
-        <div className="inline-flex items-baseline gap-2 min-w-0 max-w-full">
+        <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2 min-w-0 max-w-full">
           <p className={`font-display text-base sm:text-lg leading-snug font-semibold min-w-0 truncate ${isLocked ? "text-white" : "text-pastel-ink"}`}>{option.label}</p>
           {shortAuthor && (
-            <span className={`font-display text-base sm:text-lg leading-snug font-semibold min-w-0 truncate whitespace-nowrap ${isLocked ? "text-white" : "text-pastel-ink"}`}>- {shortAuthor}</span>
+            <span className={`font-display text-sm sm:text-lg leading-snug sm:font-semibold min-w-0 truncate ${isLocked ? "text-white/80" : "text-pastel-mid"}`}>{shortAuthor}</span>
           )}
         </div>
         {optionMeta && (
@@ -542,9 +542,9 @@ export default function Poll() {
                         <RankBadge index={index} />
                       </div>
                       <div className="min-w-0">
-                        <div className="inline-flex items-baseline gap-2 min-w-0 max-w-full">
+                        <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2 min-w-0 max-w-full">
                           <p className="font-display text-lg font-semibold text-pastel-ink leading-snug min-w-0 truncate">{option.label}</p>
-                          {shortAuthor && <span className="font-display text-lg font-semibold text-pastel-ink leading-snug min-w-0 truncate whitespace-nowrap">- {shortAuthor}</span>}
+                          {shortAuthor && <span className="font-display text-sm sm:text-lg sm:font-semibold text-pastel-mid leading-snug min-w-0 truncate">{shortAuthor}</span>}
                         </div>
                         {optionMeta && <p className="text-[10px] text-pastel-mid truncate mt-0.5">{optionMeta}</p>}
                       </div>
