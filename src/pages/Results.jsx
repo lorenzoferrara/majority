@@ -423,7 +423,10 @@ export default function Results() {
                 if (viewMode === "irv" && rounds.length > 0) {
                   const elimRoundIndex = rounds.findIndex(r => r.eliminated?.some(e => e.id === option.id));
                   const roundNum = elimRoundIndex === -1 ? rounds.length : elimRoundIndex + 1;
-                  displayText = roundNum === rounds.length ? "Winner" : `Eliminated Round ${roundNum}`;
+                  const isActualWinner = elimRoundIndex !== -1
+                    ? rounds[elimRoundIndex]?.winner?.id === option.id
+                    : !!rounds.find(r => r.winner?.id === option.id);
+                  displayText = isActualWinner ? "Winner" : roundNum === rounds.length ? "Runner-up" : `Eliminated Round ${roundNum}`;
                   barPct = (roundNum / rounds.length) * 100;
                 }
                 return (

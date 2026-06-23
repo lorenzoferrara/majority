@@ -31,7 +31,8 @@ function runIRV(ballots, options) {
     const majority = totalActive / 2;
     const winnerEntry = Object.entries(counts).find(([, v]) => v > majority);
     if (winnerEntry) {
-      rounds.push({ round: roundNumber, counts, totalActive, eliminated: [], winner: winnerEntry[0] });
+      const losers = [...active].filter(id => id !== winnerEntry[0]);
+      rounds.push({ round: roundNumber, counts, totalActive, eliminated: losers, winner: winnerEntry[0] });
       return { winner: winnerEntry[0], rounds, isTie: false };
     }
 

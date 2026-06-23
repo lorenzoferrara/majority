@@ -78,7 +78,7 @@ export function runIRV(ballots: RawBallot[], options: string[]): IRVResult {
         round: roundNumber,
         counts,
         totalActive,
-        eliminated: [],
+        eliminated: [...active].filter(id => id !== winner),
         winner,
       });
       return { winner, rounds, isTie: false };
