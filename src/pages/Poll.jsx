@@ -152,7 +152,7 @@ function SortableOption({
               event.stopPropagation();
               onUndoBookClaim(option.id);
             }}
-            className="px-1.5 sm:px-2 py-0.5 sm:py-1 border border-[#f1efe7] text-[7px] sm:text-[9px] leading-tight tracking-[0.15em] sm:tracking-[0.18em] font-bold text-[#f8f7f2] uppercase hover:bg-[#9f9f99] transition-colors whitespace-nowrap"
+            className="px-2 sm:px-2.5 py-1 sm:py-1.5 border border-[#ebe8df] rounded-md bg-[#8f8f8a] text-[8px] sm:text-[10px] leading-tight tracking-[0.14em] sm:tracking-[0.18em] font-bold text-[#fbfaf6] uppercase hover:bg-[#7f7f7a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d2b173] focus-visible:ring-offset-1 focus-visible:ring-offset-transparent transition-colors whitespace-nowrap shadow-sm"
           >
             Undo
           </button>
@@ -164,8 +164,7 @@ function SortableOption({
               event.stopPropagation();
               onBookClaim(option.id);
             }}
-            className="px-1.5 sm:px-2 py-0.5 sm:py-1 text-[7px] sm:text-[9px] leading-tight tracking-[0.12em] sm:tracking-[0.18em] font-bold uppercase text-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
-            style={{ backgroundColor: "#ccdabc", color: "#35533a" }}
+            className="px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-md border border-[#8ea37f] bg-[#d9e7c8] text-[8px] sm:text-[10px] leading-tight tracking-[0.12em] sm:tracking-[0.18em] font-bold uppercase text-center text-[#2f4a34] hover:bg-[#c8dcb0] hover:border-[#7b946e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d2b173] focus-visible:ring-offset-1 focus-visible:ring-offset-transparent transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap shadow-sm"
           >
             <span className="block">This Is</span>
             <span className="block">My Book</span>
