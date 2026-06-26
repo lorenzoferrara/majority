@@ -21,7 +21,7 @@ export default function Results() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState("irv"); // "irv" | "topN" | "exponential"
+  const [viewMode, setViewMode] = useState("irv"); // "irv" | "topN" | "exponential" | "info"
   const [topN, setTopN] = useState(2);
   const [decayFactor, setDecayFactor] = useState(1.8);
 
@@ -109,6 +109,19 @@ export default function Results() {
 
   const { poll, options, totalBallots, voters = [], winner, winners: tiedWinners, isTie, firstChoiceCounts, topTwoCounts = {}, rounds, allVoterRankings = [] } = data;
   const sortedVoters = [...voters].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+  const getRankingRows = () => {
+    const apiRankingRows = allVoterRankings.filter((ranking) => Array.isArray(ranking));
+    if (apiRankingRows.length > 0) {
+      return apiRankingRows;
+    }
+
+    if (voters && voters.length > 0) {
+      return voters.map((voter) => voter.ranking).filter((ranking) => Array.isArray(ranking));
+    }
+
+    return [];
+  };
+  const rankingRows = getRankingRows();
 
   // Calculate top-N counts from all voter rankings
   const calculateTopNCounts = (n) => {
@@ -123,8 +136,8 @@ export default function Results() {
     }
     
     // Try allVoterRankings first (from API)
-    if (allVoterRankings && allVoterRankings.length > 0) {
-      for (const ranking of allVoterRankings) {
+    if (rankingRows.length > 0) {
+      for (const ranking of rankingRows) {
         if (ranking && Array.isArray(ranking)) {
           for (let i = 0; i < Math.min(n, ranking.length); i++) {
             const optionId = ranking[i];
@@ -139,21 +152,7 @@ export default function Results() {
         return counts;
       }
     }
-    
-    // Fall back to voter.ranking if available
-    if (voters && voters.length > 0) {
-      for (const voter of voters) {
-        if (voter.ranking && Array.isArray(voter.ranking)) {
-          for (let i = 0; i < Math.min(n, voter.ranking.length); i++) {
-            const optionId = voter.ranking[i];
-            if (counts.hasOwnProperty(optionId)) {
-              counts[optionId]++;
-            }
-          }
-        }
-      }
-    }
-    
+
     return counts;
   };
 
@@ -167,8 +166,8 @@ export default function Results() {
     }
     
     // Try allVoterRankings first (from API)
-    if (allVoterRankings && allVoterRankings.length > 0) {
-      for (const ranking of allVoterRankings) {
+    if (rankingRows.length > 0) {
+      for (const ranking of rankingRows) {
         if (ranking && Array.isArray(ranking)) {
           for (let i = 0; i < ranking.length; i++) {
             const optionId = ranking[i];
@@ -183,25 +182,64 @@ export default function Results() {
         return scores;
       }
     }
-    
-    // Fall back to voter.ranking if available
-    if (voters && voters.length > 0) {
-      for (const voter of voters) {
-        if (voter.ranking && Array.isArray(voter.ranking)) {
-          for (let i = 0; i < voter.ranking.length; i++) {
-            const optionId = voter.ranking[i];
-            if (scores.hasOwnProperty(optionId)) {
-              scores[optionId] += Math.pow(factor, -i);
-            }
-          }
-        }
-      }
-    }
-    
+
     return scores;
   };
 
   const exponentialScores = calculateExponentialScores();
+  const positionDistributions = (() => {
+    const distributions = {};
+    for (const option of options) {
+      distributions[option.id] = Array(options.length).fill(0);
+    }
+
+    for (const ranking of rankingRows) {
+      for (let i = 0; i < Math.min(ranking.length, options.length); i++) {
+        const optionId = ranking[i];
+        if (distributions.hasOwnProperty(optionId)) {
+          distributions[optionId][i]++;
+        }
+      }
+    }
+
+    return distributions;
+  })();
+  const maxPositionFrequency = Math.max(1, ...Object.values(positionDistributions).flat());
+  const kdePalette = ["#a89968", "#8f7aa8", "#6f9a8d", "#c07a64", "#6f87b7", "#b07d9a", "#8a9a5b", "#b58a55"];
+  const kdeBandwidth = Math.max(0.55, options.length / 8);
+  const kdeSampleCount = Math.max(80, options.length * 18);
+  const kdeSeries = options.map((option, optionIndex) => {
+    const distribution = positionDistributions[option.id] || [];
+    const totalPlacements = distribution.reduce((sum, count) => sum + count, 0);
+    const points = [];
+
+    for (let i = 0; i < kdeSampleCount; i++) {
+      const xValue = options.length === 1
+        ? 1
+        : 1 + (i / (kdeSampleCount - 1)) * (options.length - 1);
+      let density = 0;
+
+      if (totalPlacements > 0) {
+        for (let positionIndex = 0; positionIndex < distribution.length; positionIndex++) {
+          const count = distribution[positionIndex];
+          if (count === 0) continue;
+          const z = (xValue - (positionIndex + 1)) / kdeBandwidth;
+          density += count * Math.exp(-0.5 * z * z);
+        }
+        density = density / (totalPlacements * kdeBandwidth * Math.sqrt(2 * Math.PI));
+      }
+
+      points.push({ xValue, density });
+    }
+
+    return {
+      option,
+      color: kdePalette[optionIndex % kdePalette.length],
+      points,
+      totalPlacements,
+    };
+  });
+  const maxKdeDensity = Math.max(0.001, ...kdeSeries.flatMap((series) => series.points.map((point) => point.density)));
 
   return (
     <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-3 sm:px-6 py-6 sm:py-12">
@@ -245,6 +283,12 @@ export default function Results() {
               className={`text-[10px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.3em] uppercase px-2.5 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "exponential" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
             >
               EXPONENTIAL
+            </button>
+            <button
+              onClick={() => setViewMode("info")}
+              className={`text-[10px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.3em] uppercase px-2.5 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "info" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
+            >
+              INFO
             </button>
           </div>
           {viewMode === "topN" && (
@@ -366,12 +410,152 @@ export default function Results() {
 
         {/* Vote summary label */}
         <div className="flex items-center justify-between text-[10px] tracking-[0.3em] uppercase text-pastel-muted mb-3">
-          <span>{viewMode === "irv" ? "Elimination round" : viewMode === "exponential" ? "Exponential score" : `Top-${topN} pick appearances`}</span>
+          <span>{viewMode === "irv" ? "Elimination round" : viewMode === "exponential" ? "Exponential score" : viewMode === "info" ? "Vote frequency by position" : `Top-${topN} pick appearances`}</span>
           <span>{totalBallots} voter{totalBallots !== 1 ? "s" : ""}</span>
         </div>
 
         {/* Bars */}
-        {(() => {
+        {viewMode === "info" ? (
+          <div className="mb-8 border border-pastel-border bg-[#f4f0ec] px-3 sm:px-4 py-4">
+            {rankingRows.length === 0 ? (
+              <p className="text-[11px] text-pastel-muted italic">No rankings available yet.</p>
+            ) : (
+              <div className="flex flex-col gap-5">
+                <div className="border border-pastel-border bg-pastel-card px-3 py-3">
+                  <div className="flex items-baseline justify-between gap-3 mb-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-pastel-mid">KDE by book</p>
+                    <p className="text-[10px] text-pastel-muted">Smoothed density</p>
+                  </div>
+                  {(() => {
+                    const chartWidth = 320;
+                    const chartHeight = 190;
+                    const left = 34;
+                    const right = 16;
+                    const top = 18;
+                    const bottom = 38;
+                    const innerWidth = chartWidth - left - right;
+                    const innerHeight = chartHeight - top - bottom;
+                    const xForPosition = (position) => {
+                      if (options.length === 1) return left + innerWidth / 2;
+                      return left + ((position - 1) / (options.length - 1)) * innerWidth;
+                    };
+                    const yForDensity = (density) => chartHeight - bottom - (density / maxKdeDensity) * innerHeight;
+
+                    return (
+                      <>
+                        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full border border-pastel-border bg-white rounded">
+                          <line x1={left} y1={top} x2={left} y2={chartHeight - bottom} stroke="#8b8380" strokeWidth="1.3" />
+                          <line x1={left} y1={chartHeight - bottom} x2={chartWidth - right} y2={chartHeight - bottom} stroke="#8b8380" strokeWidth="1.3" />
+                          {[0.25, 0.5, 0.75, 1].map((ratio) => {
+                            const y = chartHeight - bottom - ratio * innerHeight;
+                            return <line key={`kde-hgrid-${ratio}`} x1={left} y1={y} x2={chartWidth - right} y2={y} stroke="#ede9e2" strokeWidth="0.6" strokeDasharray="2,2" />;
+                          })}
+                          {options.map((_, i) => {
+                            const x = xForPosition(i + 1);
+                            return (
+                              <g key={`kde-x-${i}`}>
+                                <line x1={x} y1={top} x2={x} y2={chartHeight - bottom} stroke="#ede9e2" strokeWidth="0.5" strokeDasharray="2,2" />
+                                <text x={x} y={chartHeight - 15} fontSize="8" textAnchor="middle" fill="#666">{i + 1}</text>
+                              </g>
+                            );
+                          })}
+                          <text x={left - 8} y={chartHeight - bottom + 4} fontSize="9" textAnchor="end" fill="#666">0</text>
+                          <text x={left - 8} y={top + 4} fontSize="9" textAnchor="end" fill="#666">{maxKdeDensity.toFixed(2)}</text>
+                          {kdeSeries.map((series) => {
+                            if (series.totalPlacements === 0) return null;
+                            const path = series.points
+                              .map((point, i) => `${i === 0 ? "M" : "L"} ${xForPosition(point.xValue).toFixed(2)} ${yForDensity(point.density).toFixed(2)}`)
+                              .join(" ");
+
+                            return (
+                              <path
+                                key={`kde-line-${series.option.id}`}
+                                d={path}
+                                fill="none"
+                                stroke={series.color}
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                opacity="0.9"
+                              />
+                            );
+                          })}
+                          <text x={(left + chartWidth - right) / 2} y={chartHeight - 2} fontSize="8" textAnchor="middle" fill="#666">Position</text>
+                          <text x="9" y={(top + chartHeight - bottom) / 2} fontSize="9" textAnchor="middle" fill="#666" transform={`rotate(-90 9 ${(top + chartHeight - bottom) / 2})`}>Density</text>
+                        </svg>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3">
+                          {kdeSeries.map((series) => (
+                            <div key={`kde-legend-${series.option.id}`} className="flex items-center gap-1.5 min-w-0">
+                              <span className="w-3 h-0.5 shrink-0" style={{ backgroundColor: series.color }} />
+                              <span className="text-[9px] text-pastel-mid truncate max-w-[9rem]">{series.option.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+                {options.map((option) => {
+                  const distribution = positionDistributions[option.id] || [];
+                  const totalPlacements = distribution.reduce((sum, count) => sum + count, 0);
+                  const chartWidth = 280;
+                  const chartHeight = 150;
+                  const left = 30;
+                  const right = 12;
+                  const top = 14;
+                  const bottom = 42;
+                  const innerWidth = chartWidth - left - right;
+                  const innerHeight = chartHeight - top - bottom;
+                  const barGap = 3;
+                  const barWidth = Math.max(5, (innerWidth - barGap * (options.length - 1)) / Math.max(1, options.length));
+
+                  return (
+                    <div key={option.id} className="border border-pastel-border bg-pastel-card px-3 py-3">
+                      <div className="flex items-baseline justify-between gap-3 mb-3">
+                        <p className="font-display text-base font-semibold text-pastel-ink truncate">{option.label}</p>
+                        <p className="text-[10px] text-pastel-muted tabular-nums shrink-0">{totalPlacements} placement{totalPlacements !== 1 ? "s" : ""}</p>
+                      </div>
+                      <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full border border-pastel-border bg-white rounded">
+                        <line x1={left} y1={top} x2={left} y2={chartHeight - bottom} stroke="#8b8380" strokeWidth="1.3" />
+                        <line x1={left} y1={chartHeight - bottom} x2={chartWidth - right} y2={chartHeight - bottom} stroke="#8b8380" strokeWidth="1.3" />
+                        {[0.25, 0.5, 0.75, 1].map((ratio) => {
+                          const y = chartHeight - bottom - ratio * innerHeight;
+                          return <line key={`grid-${option.id}-${ratio}`} x1={left} y1={y} x2={chartWidth - right} y2={y} stroke="#ede9e2" strokeWidth="0.6" strokeDasharray="2,2" />;
+                        })}
+                        <text x={left - 7} y={chartHeight - bottom + 4} fontSize="9" textAnchor="end" fill="#666">0</text>
+                        <text x={left - 7} y={top + 4} fontSize="9" textAnchor="end" fill="#666">{maxPositionFrequency}</text>
+                        {distribution.map((count, i) => {
+                          const height = (count / maxPositionFrequency) * innerHeight;
+                          const x = left + i * (barWidth + barGap);
+                          const y = chartHeight - bottom - height;
+                          const pct = totalBallots > 0 ? Math.round((count / totalBallots) * 100) : 0;
+
+                          return (
+                            <g key={`${option.id}-position-${i}`}>
+                              <rect
+                                x={x}
+                                y={y}
+                                width={barWidth}
+                                height={height}
+                                rx="2"
+                                fill={count > 0 ? "#a89968" : "#e5e1d8"}
+                              />
+                              {count > 0 && <text x={x + barWidth / 2} y={Math.max(top + 8, y - 4)} fontSize="8" textAnchor="middle" fill="#8b8380">{count}</text>}
+                              <text x={x + barWidth / 2} y={chartHeight - 27} fontSize="8" textAnchor="middle" fill="#666">{i + 1}</text>
+                              <text x={x + barWidth / 2} y={chartHeight - 16} fontSize="7" textAnchor="middle" fill="#999">{pct}%</text>
+                            </g>
+                          );
+                        })}
+                        <text x={(left + chartWidth - right) / 2} y={chartHeight - 3} fontSize="8" textAnchor="middle" fill="#666">Position</text>
+                        <text x="8" y={(top + chartHeight - bottom) / 2} fontSize="9" textAnchor="middle" fill="#666" transform={`rotate(-90 8 ${(top + chartHeight - bottom) / 2})`}>Frequency</text>
+                      </svg>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : (() => {
           const counts = viewMode === "irv" ? (rounds.length > 0 ? rounds[rounds.length - 1].counts : firstChoiceCounts) : viewMode === "exponential" ? exponentialScores : topNCounts;
           const totalForPct = viewMode === "irv" ? totalBallots : viewMode === "exponential" ? Object.values(exponentialScores).reduce((a, b) => a + b, 0) : options.reduce((s, o) => s + (topNCounts[o.id] || 0), 0);
           let sorted;
@@ -511,6 +695,12 @@ export default function Results() {
               </svg>
             </div>
           </div>
+        )}
+
+        {viewMode === "info" && (
+          <p className="text-[11px] text-pastel-muted mb-8 leading-relaxed">
+            Each chart shows where that book appeared across all ballots. The x axis is ranking position, and the y axis is how many voters placed the book there.
+          </p>
         )}
 
         {/* Step-by-step IRV elimination */}
