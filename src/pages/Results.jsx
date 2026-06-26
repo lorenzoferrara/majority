@@ -24,6 +24,9 @@ export default function Results() {
   const [viewMode, setViewMode] = useState("irv"); // "irv" | "topN" | "exponential" | "info"
   const [topN, setTopN] = useState(2);
   const [decayFactor, setDecayFactor] = useState(1.8);
+  const [showAllInfo, setShowAllInfo] = useState(false);
+  const [showKdeOverlay, setShowKdeOverlay] = useState(false);
+  const [selectedInfoOptionId, setSelectedInfoOptionId] = useState(null);
 
   function isDateMonth(str) {
     return /^\d{4}-\d{2}$/.test(str) || str.includes('Demo');
@@ -78,6 +81,12 @@ export default function Results() {
     }, 5000); // 5 seconds
 
     return () => clearInterval(heartbeat);
+  }, [pollId]);
+
+  useEffect(() => {
+    setShowAllInfo(false);
+    setShowKdeOverlay(false);
+    setSelectedInfoOptionId(null);
   }, [pollId]);
 
   // Effect 3: Real-time updates via SSE
@@ -240,6 +249,79 @@ export default function Results() {
     };
   });
   const maxKdeDensity = Math.max(0.001, ...kdeSeries.flatMap((series) => series.points.map((point) => point.density)));
+  const optionColorById = Object.fromEntries(kdeSeries.map((series) => [series.option.id, series.color]));
+
+  const outcomeOrderedOptions = (() => {
+    if (rounds.length > 0) {
+      const winnerList = winner ? [winner] : tiedWinners || [];
+      const winnerIds = new Set(winnerList.map((w) => w.id));
+
+      const eliminatedIds = [];
+      for (const round of rounds) {
+        for (const eliminatedOption of round.eliminated || []) {
+          if (eliminatedOption?.id && !eliminatedIds.includes(eliminatedOption.id)) {
+            eliminatedIds.push(eliminatedOption.id);
+          }
+        }
+      }
+
+      const eliminatedSet = new Set(eliminatedIds);
+      const runnerUps = options.filter((option) => !winnerIds.has(option.id) && !eliminatedSet.has(option.id));
+      const reversedEliminated = [...eliminatedIds]
+        .reverse()
+        .map((id) => options.find((option) => option.id === id))
+        .filter(Boolean);
+
+      const ordered = [...winnerList, ...runnerUps, ...reversedEliminated];
+      const seen = new Set();
+      const deduped = [];
+      for (const option of ordered) {
+        if (!option || seen.has(option.id)) continue;
+        seen.add(option.id);
+        deduped.push(option);
+      }
+
+      for (const option of options) {
+        if (!seen.has(option.id)) {
+          deduped.push(option);
+          seen.add(option.id);
+        }
+      }
+
+      return deduped;
+    }
+
+    return options.slice().sort((a, b) => (firstChoiceCounts[b.id] || 0) - (firstChoiceCounts[a.id] || 0));
+  })();
+
+  const defaultInfoOptionIds = (() => {
+    const ids = [];
+    const winnerList = winner ? [winner] : tiedWinners || [];
+    for (const winningOption of winnerList) {
+      if (winningOption?.id) ids.push(winningOption.id);
+    }
+
+    const runnerUp = outcomeOrderedOptions.find((option) => !ids.includes(option.id));
+    if (runnerUp?.id) ids.push(runnerUp.id);
+
+    const topEliminated = rounds
+      .flatMap((round) => round.eliminated || [])
+      .reverse()
+      .find((option) => option?.id && !ids.includes(option.id));
+    if (topEliminated?.id) ids.push(topEliminated.id);
+
+    for (const option of outcomeOrderedOptions) {
+      if (ids.length >= 3) break;
+      if (!ids.includes(option.id)) ids.push(option.id);
+    }
+
+    return ids;
+  })();
+
+  const infoVisibleOptions = showAllInfo
+    ? outcomeOrderedOptions
+    : outcomeOrderedOptions.filter((option) => defaultInfoOptionIds.includes(option.id));
+  const infoVisibleOptionIdSet = new Set(infoVisibleOptions.map((option) => option.id));
 
   return (
     <main className="min-h-screen bg-pastel-bg flex items-center justify-center px-3 sm:px-6 py-6 sm:py-12">
@@ -421,12 +503,37 @@ export default function Results() {
               <p className="text-[11px] text-pastel-muted italic">No rankings available yet.</p>
             ) : (
               <div className="flex flex-col gap-5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <p className="text-[10px] tracking-[0.18em] uppercase text-pastel-muted">
+                    {showAllInfo ? `Showing all ${outcomeOrderedOptions.length} books` : "Focused view: winner, runner-up, top elimination"}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowAllInfo((prev) => !prev)}
+                    className="text-[10px] tracking-[0.2em] uppercase text-pastel-mid border border-pastel-border px-2.5 py-1.5 hover:border-pastel-gold hover:text-pastel-gold transition-colors w-fit"
+                  >
+                    {showAllInfo ? "Show Focus" : "Show All"}
+                  </button>
+                </div>
+
                 <div className="border border-pastel-border bg-pastel-card px-3 py-3">
-                  <div className="flex items-baseline justify-between gap-3 mb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2 sm:gap-3 mb-3">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-pastel-mid">KDE by book</p>
-                    <p className="text-[10px] text-pastel-muted">Smoothed density</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-[10px] text-pastel-muted">Smoothed density</p>
+                      <button
+                        type="button"
+                        onClick={() => setShowKdeOverlay((prev) => !prev)}
+                        className="text-[10px] tracking-[0.15em] uppercase text-pastel-mid border border-pastel-border px-2 py-1 hover:border-pastel-gold hover:text-pastel-gold transition-colors"
+                      >
+                        {showKdeOverlay ? "Hide" : "Show"}
+                      </button>
+                    </div>
                   </div>
-                  {(() => {
+
+                  {!showKdeOverlay ? (
+                    <p className="text-[11px] text-pastel-muted italic">KDE overlay hidden to reduce visual clutter. Click Show to display it.</p>
+                  ) : (() => {
                     const chartWidth = 320;
                     const chartHeight = 190;
                     const left = 34;
@@ -461,11 +568,13 @@ export default function Results() {
                           })}
                           <text x={left - 8} y={chartHeight - bottom + 4} fontSize="9" textAnchor="end" fill="#666">0</text>
                           <text x={left - 8} y={top + 4} fontSize="9" textAnchor="end" fill="#666">{maxKdeDensity.toFixed(2)}</text>
-                          {kdeSeries.map((series) => {
+                          {kdeSeries.filter((series) => infoVisibleOptionIdSet.has(series.option.id)).map((series) => {
                             if (series.totalPlacements === 0) return null;
                             const path = series.points
                               .map((point, i) => `${i === 0 ? "M" : "L"} ${xForPosition(point.xValue).toFixed(2)} ${yForDensity(point.density).toFixed(2)}`)
                               .join(" ");
+                            const isSelected = selectedInfoOptionId === series.option.id;
+                            const isDimmed = selectedInfoOptionId && !isSelected;
 
                             return (
                               <path
@@ -473,31 +582,47 @@ export default function Results() {
                                 d={path}
                                 fill="none"
                                 stroke={series.color}
-                                strokeWidth="2"
+                                strokeWidth={isSelected ? "2.8" : "2"}
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                opacity="0.9"
+                                opacity={isDimmed ? "0.2" : "0.9"}
                               />
                             );
                           })}
                           <text x={(left + chartWidth - right) / 2} y={chartHeight - 2} fontSize="8" textAnchor="middle" fill="#666">Position</text>
                           <text x="9" y={(top + chartHeight - bottom) / 2} fontSize="9" textAnchor="middle" fill="#666" transform={`rotate(-90 9 ${(top + chartHeight - bottom) / 2})`}>Density</text>
                         </svg>
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3">
-                          {kdeSeries.map((series) => (
-                            <div key={`kde-legend-${series.option.id}`} className="flex items-center gap-1.5 min-w-0">
+                        <div className="flex flex-wrap gap-x-2 gap-y-1.5 mt-3">
+                          {kdeSeries.filter((series) => infoVisibleOptionIdSet.has(series.option.id)).map((series) => (
+                            <button
+                              key={`kde-legend-${series.option.id}`}
+                              type="button"
+                              onClick={() => setSelectedInfoOptionId((prev) => (prev === series.option.id ? null : series.option.id))}
+                              className={`flex items-center gap-1.5 min-w-0 border px-1.5 py-0.5 transition-colors ${selectedInfoOptionId === series.option.id ? "border-pastel-gold bg-amber-50" : "border-pastel-border bg-white hover:border-pastel-gold"}`}
+                            >
                               <span className="w-3 h-0.5 shrink-0" style={{ backgroundColor: series.color }} />
                               <span className="text-[9px] text-pastel-mid truncate max-w-[9rem]">{series.option.label}</span>
-                            </div>
+                            </button>
                           ))}
+                          {selectedInfoOptionId && (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedInfoOptionId(null)}
+                              className="text-[9px] text-pastel-mid underline hover:text-pastel-ink"
+                            >
+                              Clear selection
+                            </button>
+                          )}
                         </div>
                       </>
                     );
                   })()}
                 </div>
-                {options.map((option) => {
+                {infoVisibleOptions.map((option) => {
                   const distribution = positionDistributions[option.id] || [];
                   const totalPlacements = distribution.reduce((sum, count) => sum + count, 0);
+                  const isSelected = selectedInfoOptionId === option.id;
+                  const isDimmed = selectedInfoOptionId && !isSelected;
                   const chartWidth = 280;
                   const chartHeight = 150;
                   const left = 30;
@@ -510,7 +635,10 @@ export default function Results() {
                   const barWidth = Math.max(5, (innerWidth - barGap * (options.length - 1)) / Math.max(1, options.length));
 
                   return (
-                    <div key={option.id} className="border border-pastel-border bg-pastel-card px-3 py-3">
+                    <div
+                      key={option.id}
+                      className={`border bg-pastel-card px-3 py-3 transition-opacity ${isSelected ? "border-pastel-gold" : "border-pastel-border"} ${isDimmed ? "opacity-35" : "opacity-100"}`}
+                    >
                       <div className="flex items-baseline justify-between gap-3 mb-3">
                         <p className="font-display text-base font-semibold text-pastel-ink truncate">{option.label}</p>
                         <p className="text-[10px] text-pastel-muted tabular-nums shrink-0">{totalPlacements} placement{totalPlacements !== 1 ? "s" : ""}</p>
@@ -538,7 +666,7 @@ export default function Results() {
                                 width={barWidth}
                                 height={height}
                                 rx="2"
-                                fill={count > 0 ? "#a89968" : "#e5e1d8"}
+                                fill={count > 0 ? (isSelected ? (optionColorById[option.id] || "#a89968") : "#a89968") : "#e5e1d8"}
                               />
                               {count > 0 && <text x={x + barWidth / 2} y={Math.max(top + 8, y - 4)} fontSize="8" textAnchor="middle" fill="#8b8380">{count}</text>}
                               <text x={x + barWidth / 2} y={chartHeight - 27} fontSize="8" textAnchor="middle" fill="#666">{i + 1}</text>
