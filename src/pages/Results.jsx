@@ -1,19 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSSE } from "../hooks/useSSE";
-
-function Medal({ rank }) {
-  if (rank === 1) return (
-    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: "50%", background: "radial-gradient(circle at 35% 35%, #FFE066, #FFD700, #B8860B)", color: "#5a3e00", fontWeight: 700, fontSize: 12, flexShrink: 0, boxShadow: "0 1px 4px rgba(0,0,0,0.18)" }}>1</span>
-  );
-  if (rank === 2) return (
-    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: "50%", background: "radial-gradient(circle at 35% 35%, #f0f0f0, #C0C0C0, #888)", color: "#333", fontWeight: 700, fontSize: 12, flexShrink: 0, boxShadow: "0 1px 4px rgba(0,0,0,0.15)" }}>2</span>
-  );
-  if (rank === 3) return (
-    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: "50%", background: "radial-gradient(circle at 35% 35%, #e8b07a, #CD7F32, #8B5A1A)", color: "#fff", fontWeight: 700, fontSize: 12, flexShrink: 0, boxShadow: "0 1px 4px rgba(0,0,0,0.18)" }}>3</span>
-  );
-  return <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, color: "#B8B0A8", fontWeight: 600, fontSize: 13, flexShrink: 0 }}>{rank}</span>;
-}
+import ViewModeToggle from "../components/results/ViewModeToggle";
+import WinnerSection from "../components/results/WinnerSection";
+import InfoSection from "../components/results/InfoSection";
+import LeaderboardSection from "../components/results/LeaderboardSection";
+import IRVRoundsSection from "../components/results/IRVRoundsSection";
 
 export default function Results() {
   const { pollId } = useParams();
@@ -345,150 +337,27 @@ export default function Results() {
         <h1 className="font-display text-3xl sm:text-5xl font-bold text-pastel-ink leading-none mb-1">{formatPollTitle(poll)}</h1>
         <p className="text-[10px] sm:text-xs tracking-[0.3em] sm:tracking-[0.4em] uppercase text-pastel-muted mb-6">Results</p>
 
-        {/* View mode toggle */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-10 overflow-x-auto">
-          <div className="flex items-center gap-0.5 sm:gap-1 border border-pastel-border bg-[#f4f0ec] p-0.5 sm:p-1 w-fit shrink-0">
-            <button
-              onClick={() => setViewMode("irv")}
-              className={`text-[10px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.3em] uppercase px-2.5 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "irv" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
-            >
-              OSCAR
-            </button>
-            <button
-              onClick={() => setViewMode("topN")}
-              className={`text-[10px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.3em] uppercase px-2.5 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "topN" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
-            >
-              TOP N
-            </button>
-            <button
-              onClick={() => setViewMode("exponential")}
-              className={`text-[10px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.3em] uppercase px-2.5 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "exponential" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
-            >
-              EXPONENTIAL
-            </button>
-            <button
-              onClick={() => setViewMode("info")}
-              className={`text-[10px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.3em] uppercase px-2.5 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "info" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
-            >
-              INFO
-            </button>
-          </div>
-          {viewMode === "topN" && (
-            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-              <label className="text-[8px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.2em] uppercase text-pastel-muted font-medium">Top</label>
-              <button
-                onClick={() => setTopN(Math.max(1, topN - 1))}
-                disabled={topN <= 1}
-                className="text-[12px] sm:text-[10px] font-semibold px-2.5 sm:px-2 py-1.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[44px] sm:min-w-auto"
-              >
-                −
-              </button>
-              <span className="text-[10px] sm:text-[10px] font-semibold w-8 text-center">{topN}</span>
-              <button
-                onClick={() => setTopN(Math.min(options.length, topN + 1))}
-                disabled={topN >= options.length}
-                className="text-[12px] sm:text-[10px] font-semibold px-2.5 sm:px-2 py-1.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[44px] sm:min-w-auto"
-              >
-                +
-              </button>
-            </div>
-          )}
-          {viewMode === "exponential" && (
-            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-              <label className="text-[8px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.2em] uppercase text-pastel-muted font-medium">Decay</label>
-              <button
-                onClick={() => setDecayFactor(Math.max(1.1, Math.round((decayFactor - 0.1) * 10) / 10))}
-                disabled={decayFactor <= 1.1}
-                className="text-[12px] sm:text-[10px] font-semibold px-2.5 sm:px-2 py-1.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[44px] sm:min-w-auto"
-              >
-                −
-              </button>
-              <span className="text-[10px] sm:text-[10px] font-semibold w-8 text-center">{decayFactor.toFixed(1)}</span>
-              <button
-                onClick={() => setDecayFactor(Math.round((decayFactor + 0.1) * 10) / 10)}
-                disabled={decayFactor >= 5}
-                className="text-[12px] sm:text-[10px] font-semibold px-2.5 sm:px-2 py-1.5 sm:py-1 border border-pastel-border bg-pastel-card text-pastel-mid hover:text-pastel-ink hover:border-pastel-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[44px] sm:min-w-auto"
-              >
-                +
-              </button>
-            </div>
-          )}
-        </div>
+        <ViewModeToggle
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          topN={topN}
+          setTopN={setTopN}
+          optionsLength={options.length}
+          decayFactor={decayFactor}
+          setDecayFactor={setDecayFactor}
+        />
 
-        {/* Winner */}
-        {poll.status === "CLOSED" && viewMode === "irv" && (
-          <div className="mb-10 border-l-4 border-pastel-gold pl-4 sm:pl-5 py-1">
-            {winner ? (
-              <>
-                <p className="text-[10px] sm:text-[11px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Winner</p>
-                <p className="font-display text-2xl sm:text-3xl font-bold text-pastel-ink">{winner.label}</p>
-              </>
-            ) : isTie && tiedWinners?.length > 0 ? (
-              <>
-                <p className="text-[10px] sm:text-[11px] tracking-[0.3em] sm:tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Co-winners</p>
-                {tiedWinners.map((w) => (
-                  <p key={w.id} className="font-display text-2xl sm:text-3xl font-bold text-pastel-ink">{w.label}</p>
-                ))}
-              </>
-            ) : (
-              <p className="font-display text-xl italic text-pastel-muted">No winner determined.</p>
-            )}
-          </div>
-        )}
-
-        {poll.status === "CLOSED" && viewMode === "topN" && (() => {
-          const maxCount = Math.max(0, ...options.map((o) => topNCounts[o.id] || 0));
-          const topNWinners = options.filter((o) => (topNCounts[o.id] || 0) === maxCount && maxCount > 0);
-          return (
-            <div className="mb-10 border-l-4 border-pastel-gold pl-5 py-1">
-              {topNWinners.length === 1 ? (
-                <>
-                  <p className="text-[11px] tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Winner</p>
-                  <p className="font-display text-3xl font-bold text-pastel-ink">{topNWinners[0].label}</p>
-                </>
-              ) : topNWinners.length > 1 ? (
-                <>
-                  <p className="text-[11px] tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Co-winners</p>
-                  {topNWinners.map((w) => (
-                    <p key={w.id} className="font-display text-3xl font-bold text-pastel-ink">{w.label}</p>
-                  ))}
-                </>
-              ) : (
-                <p className="font-display text-xl italic text-pastel-muted">No winner determined.</p>
-              )}
-            </div>
-          );
-        })()}
-
-        {poll.status === "CLOSED" && viewMode === "exponential" && (() => {
-          const maxScore = Math.max(0, ...options.map((o) => exponentialScores[o.id] || 0));
-          const expWinners = options.filter((o) => Math.abs((exponentialScores[o.id] || 0) - maxScore) < 0.0001 && maxScore > 0);
-          return (
-            <div className="mb-10 border-l-4 border-pastel-gold pl-5 py-1">
-              {expWinners.length === 1 ? (
-                <>
-                  <p className="text-[11px] tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Winner</p>
-                  <p className="font-display text-3xl font-bold text-pastel-ink">{expWinners[0].label}</p>
-                </>
-              ) : expWinners.length > 1 ? (
-                <>
-                  <p className="text-[11px] tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Co-winners</p>
-                  {expWinners.map((w) => (
-                    <p key={w.id} className="font-display text-3xl font-bold text-pastel-ink">{w.label}</p>
-                  ))}
-                </>
-              ) : (
-                <p className="font-display text-xl italic text-pastel-muted">No winner determined.</p>
-              )}
-            </div>
-          );
-        })()}
-
-        {poll.status !== "CLOSED" && (
-          <div className="mb-10 py-4 border-t border-pastel-border">
-            <p className="text-sm text-pastel-mid italic">Results are published once voting closes.</p>
-          </div>
-        )}
+        <WinnerSection
+          pollStatus={poll.status}
+          viewMode={viewMode}
+          winner={winner}
+          tiedWinners={tiedWinners}
+          isTie={isTie}
+          options={options}
+          topNCounts={topNCounts}
+          topN={topN}
+          exponentialScores={exponentialScores}
+        />
 
         {/* Vote summary label */}
         <div className="flex items-center justify-between text-[10px] tracking-[0.3em] uppercase text-pastel-muted mb-3">
@@ -496,274 +365,39 @@ export default function Results() {
           <span>{totalBallots} voter{totalBallots !== 1 ? "s" : ""}</span>
         </div>
 
-        {/* Bars */}
         {viewMode === "info" ? (
-          <div className="mb-8 border border-pastel-border bg-[#f4f0ec] px-3 sm:px-4 py-4">
-            {rankingRows.length === 0 ? (
-              <p className="text-[11px] text-pastel-muted italic">No rankings available yet.</p>
-            ) : (
-              <div className="flex flex-col gap-5">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <p className="text-[10px] tracking-[0.18em] uppercase text-pastel-muted">
-                    {showAllInfo ? `Showing all ${outcomeOrderedOptions.length} books` : "Focused view: winner, runner-up, top elimination"}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setShowAllInfo((prev) => !prev)}
-                    className="text-[10px] tracking-[0.2em] uppercase text-pastel-mid border border-pastel-border px-2.5 py-1.5 hover:border-pastel-gold hover:text-pastel-gold transition-colors w-fit"
-                  >
-                    {showAllInfo ? "Show Focus" : "Show All"}
-                  </button>
-                </div>
-
-                <div className="border border-pastel-border bg-pastel-card px-3 py-3">
-                  <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2 sm:gap-3 mb-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-pastel-mid">KDE by book</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-[10px] text-pastel-muted">Smoothed density</p>
-                      <button
-                        type="button"
-                        onClick={() => setShowKdeOverlay((prev) => !prev)}
-                        className="text-[10px] tracking-[0.15em] uppercase text-pastel-mid border border-pastel-border px-2 py-1 hover:border-pastel-gold hover:text-pastel-gold transition-colors"
-                      >
-                        {showKdeOverlay ? "Hide" : "Show"}
-                      </button>
-                    </div>
-                  </div>
-
-                  {!showKdeOverlay ? (
-                    <p className="text-[11px] text-pastel-muted italic">KDE overlay hidden to reduce visual clutter. Click Show to display it.</p>
-                  ) : (() => {
-                    const chartWidth = 320;
-                    const chartHeight = 190;
-                    const left = 34;
-                    const right = 16;
-                    const top = 18;
-                    const bottom = 38;
-                    const innerWidth = chartWidth - left - right;
-                    const innerHeight = chartHeight - top - bottom;
-                    const xForPosition = (position) => {
-                      if (options.length === 1) return left + innerWidth / 2;
-                      return left + ((position - 1) / (options.length - 1)) * innerWidth;
-                    };
-                    const yForDensity = (density) => chartHeight - bottom - (density / maxKdeDensity) * innerHeight;
-
-                    return (
-                      <>
-                        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full border border-pastel-border bg-white rounded">
-                          <line x1={left} y1={top} x2={left} y2={chartHeight - bottom} stroke="#8b8380" strokeWidth="1.3" />
-                          <line x1={left} y1={chartHeight - bottom} x2={chartWidth - right} y2={chartHeight - bottom} stroke="#8b8380" strokeWidth="1.3" />
-                          {[0.25, 0.5, 0.75, 1].map((ratio) => {
-                            const y = chartHeight - bottom - ratio * innerHeight;
-                            return <line key={`kde-hgrid-${ratio}`} x1={left} y1={y} x2={chartWidth - right} y2={y} stroke="#ede9e2" strokeWidth="0.6" strokeDasharray="2,2" />;
-                          })}
-                          {options.map((_, i) => {
-                            const x = xForPosition(i + 1);
-                            return (
-                              <g key={`kde-x-${i}`}>
-                                <line x1={x} y1={top} x2={x} y2={chartHeight - bottom} stroke="#ede9e2" strokeWidth="0.5" strokeDasharray="2,2" />
-                                <text x={x} y={chartHeight - 15} fontSize="8" textAnchor="middle" fill="#666">{i + 1}</text>
-                              </g>
-                            );
-                          })}
-                          <text x={left - 8} y={chartHeight - bottom + 4} fontSize="9" textAnchor="end" fill="#666">0</text>
-                          <text x={left - 8} y={top + 4} fontSize="9" textAnchor="end" fill="#666">{maxKdeDensity.toFixed(2)}</text>
-                          {kdeSeries.filter((series) => infoVisibleOptionIdSet.has(series.option.id)).map((series) => {
-                            if (series.totalPlacements === 0) return null;
-                            const path = series.points
-                              .map((point, i) => `${i === 0 ? "M" : "L"} ${xForPosition(point.xValue).toFixed(2)} ${yForDensity(point.density).toFixed(2)}`)
-                              .join(" ");
-                            const isSelected = selectedInfoOptionId === series.option.id;
-                            const isDimmed = selectedInfoOptionId && !isSelected;
-
-                            return (
-                              <path
-                                key={`kde-line-${series.option.id}`}
-                                d={path}
-                                fill="none"
-                                stroke={series.color}
-                                strokeWidth={isSelected ? "2.8" : "2"}
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                opacity={isDimmed ? "0.2" : "0.9"}
-                              />
-                            );
-                          })}
-                          <text x={(left + chartWidth - right) / 2} y={chartHeight - 2} fontSize="8" textAnchor="middle" fill="#666">Position</text>
-                          <text x="9" y={(top + chartHeight - bottom) / 2} fontSize="9" textAnchor="middle" fill="#666" transform={`rotate(-90 9 ${(top + chartHeight - bottom) / 2})`}>Density</text>
-                        </svg>
-                        <div className="flex flex-wrap gap-x-2 gap-y-1.5 mt-3">
-                          {kdeSeries.filter((series) => infoVisibleOptionIdSet.has(series.option.id)).map((series) => (
-                            <button
-                              key={`kde-legend-${series.option.id}`}
-                              type="button"
-                              onClick={() => setSelectedInfoOptionId((prev) => (prev === series.option.id ? null : series.option.id))}
-                              className={`flex items-center gap-1.5 min-w-0 border px-1.5 py-0.5 transition-colors ${selectedInfoOptionId === series.option.id ? "border-pastel-gold bg-amber-50" : "border-pastel-border bg-white hover:border-pastel-gold"}`}
-                            >
-                              <span className="w-3 h-0.5 shrink-0" style={{ backgroundColor: series.color }} />
-                              <span className="text-[9px] text-pastel-mid truncate max-w-[9rem]">{series.option.label}</span>
-                            </button>
-                          ))}
-                          {selectedInfoOptionId && (
-                            <button
-                              type="button"
-                              onClick={() => setSelectedInfoOptionId(null)}
-                              className="text-[9px] text-pastel-mid underline hover:text-pastel-ink"
-                            >
-                              Clear selection
-                            </button>
-                          )}
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-                {infoVisibleOptions.map((option) => {
-                  const distribution = positionDistributions[option.id] || [];
-                  const totalPlacements = distribution.reduce((sum, count) => sum + count, 0);
-                  const isSelected = selectedInfoOptionId === option.id;
-                  const isDimmed = selectedInfoOptionId && !isSelected;
-                  const chartWidth = 280;
-                  const chartHeight = 150;
-                  const left = 30;
-                  const right = 12;
-                  const top = 14;
-                  const bottom = 42;
-                  const innerWidth = chartWidth - left - right;
-                  const innerHeight = chartHeight - top - bottom;
-                  const barGap = 3;
-                  const barWidth = Math.max(5, (innerWidth - barGap * (options.length - 1)) / Math.max(1, options.length));
-
-                  return (
-                    <div
-                      key={option.id}
-                      className={`border bg-pastel-card px-3 py-3 transition-opacity ${isSelected ? "border-pastel-gold" : "border-pastel-border"} ${isDimmed ? "opacity-35" : "opacity-100"}`}
-                    >
-                      <div className="flex items-baseline justify-between gap-3 mb-3">
-                        <p className="font-display text-base font-semibold text-pastel-ink truncate">{option.label}</p>
-                        <p className="text-[10px] text-pastel-muted tabular-nums shrink-0">{totalPlacements} placement{totalPlacements !== 1 ? "s" : ""}</p>
-                      </div>
-                      <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full border border-pastel-border bg-white rounded">
-                        <line x1={left} y1={top} x2={left} y2={chartHeight - bottom} stroke="#8b8380" strokeWidth="1.3" />
-                        <line x1={left} y1={chartHeight - bottom} x2={chartWidth - right} y2={chartHeight - bottom} stroke="#8b8380" strokeWidth="1.3" />
-                        {[0.25, 0.5, 0.75, 1].map((ratio) => {
-                          const y = chartHeight - bottom - ratio * innerHeight;
-                          return <line key={`grid-${option.id}-${ratio}`} x1={left} y1={y} x2={chartWidth - right} y2={y} stroke="#ede9e2" strokeWidth="0.6" strokeDasharray="2,2" />;
-                        })}
-                        <text x={left - 7} y={chartHeight - bottom + 4} fontSize="9" textAnchor="end" fill="#666">0</text>
-                        <text x={left - 7} y={top + 4} fontSize="9" textAnchor="end" fill="#666">{maxPositionFrequency}</text>
-                        {distribution.map((count, i) => {
-                          const height = (count / maxPositionFrequency) * innerHeight;
-                          const x = left + i * (barWidth + barGap);
-                          const y = chartHeight - bottom - height;
-                          const pct = totalBallots > 0 ? Math.round((count / totalBallots) * 100) : 0;
-
-                          return (
-                            <g key={`${option.id}-position-${i}`}>
-                              <rect
-                                x={x}
-                                y={y}
-                                width={barWidth}
-                                height={height}
-                                rx="2"
-                                fill={count > 0 ? (isSelected ? (optionColorById[option.id] || "#a89968") : "#a89968") : "#e5e1d8"}
-                              />
-                              {count > 0 && <text x={x + barWidth / 2} y={Math.max(top + 8, y - 4)} fontSize="8" textAnchor="middle" fill="#8b8380">{count}</text>}
-                              <text x={x + barWidth / 2} y={chartHeight - 27} fontSize="8" textAnchor="middle" fill="#666">{i + 1}</text>
-                              <text x={x + barWidth / 2} y={chartHeight - 16} fontSize="7" textAnchor="middle" fill="#999">{pct}%</text>
-                            </g>
-                          );
-                        })}
-                        <text x={(left + chartWidth - right) / 2} y={chartHeight - 3} fontSize="8" textAnchor="middle" fill="#666">Position</text>
-                        <text x="8" y={(top + chartHeight - bottom) / 2} fontSize="9" textAnchor="middle" fill="#666" transform={`rotate(-90 8 ${(top + chartHeight - bottom) / 2})`}>Frequency</text>
-                      </svg>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        ) : (() => {
-          const counts = viewMode === "irv" ? (rounds.length > 0 ? rounds[rounds.length - 1].counts : firstChoiceCounts) : viewMode === "exponential" ? exponentialScores : topNCounts;
-          const totalForPct = viewMode === "irv" ? totalBallots : viewMode === "exponential" ? Object.values(exponentialScores).reduce((a, b) => a + b, 0) : options.reduce((s, o) => s + (topNCounts[o.id] || 0), 0);
-          let sorted;
-          if (viewMode === "irv" && rounds.length > 0) {
-            // Custom order: winners first, then eliminated in reverse order of elimination
-            const eliminatedOrder = [];
-            for (const r of rounds) {
-              if (r.eliminated) eliminatedOrder.push(...r.eliminated);
-            }
-            const reversedEliminated = eliminatedOrder.reverse();
-            const winnerList = winner ? [winner] : tiedWinners || [];
-            const customOrder = [...winnerList, ...reversedEliminated];
-            sorted = options.slice().sort((a, b) => {
-              const aIndex = customOrder.findIndex(o => o.id === a.id);
-              const bIndex = customOrder.findIndex(o => o.id === b.id);
-              return aIndex - bIndex;
-            });
-          } else {
-            sorted = options.slice().sort((a, b) => (counts[b.id] || 0) - (counts[a.id] || 0));
-          }
-          // dense rank: ties share the same rank
-          const ranks = {};
-          if (viewMode === "irv" && rounds.length > 0) {
-            // For IRV, rank based on elimination order: winners rank 1, then eliminated by reverse order
-            const winnerList = winner ? [winner] : tiedWinners || [];
-            const winnerCount = winnerList.length;
-            for (let i = 0; i < sorted.length; i++) {
-              ranks[sorted[i].id] = i < winnerCount ? 1 : 2 + (i - winnerCount);
-            }
-          } else {
-            let rank = 1;
-            for (let i = 0; i < sorted.length; i++) {
-              if (i > 0 && (counts[sorted[i].id] || 0) < (counts[sorted[i - 1].id] || 0)) {
-                rank = i + 1;
-              }
-              ranks[sorted[i].id] = rank;
-            }
-          }
-          return (
-            <div className="flex flex-col gap-1.5 mb-8">
-              {sorted.map((option) => {
-                const count = counts[option.id] || 0;
-                const pct = totalForPct > 0 ? Math.round((count / totalForPct) * 100) : 0;
-                const r = ranks[option.id];
-                const isTop = r === 1;
-                // For IRV, show elimination round instead of votes
-                let displayText = viewMode === "exponential" ? `${count.toFixed(2)}` : `${count} (${pct}%)`;
-                let barPct = pct;
-                if (viewMode === "irv" && rounds.length > 0) {
-                  const elimRoundIndex = rounds.findIndex(r => r.eliminated?.some(e => e.id === option.id));
-                  const roundNum = elimRoundIndex === -1 ? rounds.length : elimRoundIndex + 1;
-                  const isActualWinner = elimRoundIndex !== -1
-                    ? rounds[elimRoundIndex]?.winner?.id === option.id
-                    : !!rounds.find(r => r.winner?.id === option.id);
-                  displayText = isActualWinner ? "Winner" : roundNum === rounds.length ? "Runner-up" : `Eliminated Round ${roundNum}`;
-                  barPct = (roundNum / rounds.length) * 100;
-                }
-                return (
-                  <div key={option.id} className={`px-3 py-2.5 border flex items-center gap-3 ${isTop ? "border-pastel-gold bg-amber-50" : "border-pastel-border bg-[#f4f0ec]"}`}>
-                    <Medal rank={r} />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline justify-between mb-1.5">
-                        <span className={`font-display text-base font-semibold ${isTop ? "text-pastel-ink" : "text-pastel-mid"}`}>
-                          {option.label}
-                        </span>
-                        <span className="text-pastel-muted text-[11px] tabular-nums ml-4 shrink-0">{displayText}</span>
-                      </div>
-                      <div className="h-1 bg-pastel-border w-full rounded-full overflow-hidden">
-                        <div
-                          className={`h-1 rounded-full transition-all duration-700 ${isTop ? "bg-pastel-gold" : "bg-pastel-muted"}`}
-                          style={{ width: `${barPct}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })()}
+          <InfoSection
+            rankingRows={rankingRows}
+            showAllInfo={showAllInfo}
+            setShowAllInfo={setShowAllInfo}
+            showKdeOverlay={showKdeOverlay}
+            setShowKdeOverlay={setShowKdeOverlay}
+            outcomeOrderedOptions={outcomeOrderedOptions}
+            infoVisibleOptions={infoVisibleOptions}
+            positionDistributions={positionDistributions}
+            totalBallots={totalBallots}
+            options={options}
+            maxPositionFrequency={maxPositionFrequency}
+            maxKdeDensity={maxKdeDensity}
+            kdeSeries={kdeSeries}
+            infoVisibleOptionIdSet={infoVisibleOptionIdSet}
+            selectedInfoOptionId={selectedInfoOptionId}
+            setSelectedInfoOptionId={setSelectedInfoOptionId}
+            optionColorById={optionColorById}
+          />
+        ) : (
+          <LeaderboardSection
+            viewMode={viewMode}
+            rounds={rounds}
+            firstChoiceCounts={firstChoiceCounts}
+            exponentialScores={exponentialScores}
+            topNCounts={topNCounts}
+            totalBallots={totalBallots}
+            options={options}
+            winner={winner}
+            tiedWinners={tiedWinners}
+          />
+        )}
 
         {/* Top-2 method explanation */}
         {viewMode === "topN" && (
@@ -831,68 +465,13 @@ export default function Results() {
           </p>
         )}
 
-        {/* Step-by-step IRV elimination */}
-        {viewMode === "irv" && rounds.length > 0 && (
-          <div className="mb-8">
-            <p className="text-[11px] text-pastel-muted mb-4 font-semibold tracking-[0.2em] uppercase">How the winner was decided: Round-by-round ({rounds.length} round{rounds.length !== 1 ? "s" : ""})</p>
-            <div className="relative">
-              {/* vertical line */}
-              <div className="absolute left-[17px] top-0 bottom-0 w-px bg-pastel-border" />
-              <div className="flex flex-col gap-5">
-                {rounds.map((r, i) => {
-                  const sorted = Object.entries(r.counts).sort(([, a], [, b]) => b - a);
-                  const roundTotal = sorted.reduce((s, [, c]) => s + c, 0);
-                  const isLast = i === rounds.length - 1;
-                  return (
-                    <div key={r.round} className="flex gap-4">
-                      {/* circle */}
-                      <div className={`relative z-10 flex-shrink-0 w-9 h-9 rounded-full border-2 flex items-center justify-center text-xs font-bold
-                        ${isLast ? "border-pastel-gold bg-amber-50 text-pastel-gold" : "border-pastel-border bg-pastel-card text-pastel-mid"}`}>
-                        {r.round}
-                      </div>
-                      {/* content */}
-                      <div className="flex-1 border border-pastel-border bg-[#f4f0ec] px-4 py-3 -mt-0.5">
-                        {sorted.map(([id, count]) => {
-                          const opt = options.find((o) => o.id === id);
-                          const isElim = r.eliminated?.some((e) => e.id === id);
-                          const isTiedWin = isLast && isTie && r.winners?.some((w) => w.id === id);
-                          const isWin = (isLast && winner?.id === id) || isTiedWin;
-                          const pct = roundTotal > 0 ? Math.round((count / roundTotal) * 100) : 0;
-                          return (
-                            <div key={id} className="mb-1.5 last:mb-0">
-                              <div className="flex items-baseline justify-between mb-0.5">
-                                <span className={`text-xs font-semibold ${isElim ? "line-through text-pastel-rose" : isWin ? "text-pastel-gold" : "text-pastel-ink"}`}>
-                                  {isElim && "✕ "}{isWin && "✓ "}{opt?.label ?? id}
-                                </span>
-                                <span className="text-[11px] text-pastel-mid tabular-nums ml-3 shrink-0">{count} ({pct}%)</span>
-                              </div>
-                              <div className="h-1 bg-pastel-border w-full rounded-full overflow-hidden">
-                                <div
-                                  className={`h-1 rounded-full ${isElim ? "bg-pastel-rose" : isWin ? "bg-pastel-gold" : "bg-pastel-muted"}`}
-                                  style={{ width: `${pct}%` }}
-                                />
-                              </div>
-                            </div>
-                          );
-                        })}
-                        {isLast && winner && (
-                          <p className="text-[11px] text-pastel-gold mt-2.5 font-semibold tracking-wide">
-                            Winner → {winner.label}
-                          </p>
-                        )}
-                        {isLast && isTie && r.winners?.length > 0 && (
-                          <p className="text-[11px] text-pastel-gold mt-2.5 font-semibold tracking-wide">
-                            Co-winners → {r.winners.map((w) => w.label).join(", ")}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
+        <IRVRoundsSection
+          viewMode={viewMode}
+          rounds={rounds}
+          options={options}
+          isTie={isTie}
+          winner={winner}
+        />
 
         {/* Navigation */}
         <div className="flex flex-wrap items-center gap-3 sm:gap-8 text-[9px] sm:text-[11px] tracking-[0.25em] sm:tracking-[0.35em] uppercase border-t border-pastel-border pt-6 sm:pt-8">
