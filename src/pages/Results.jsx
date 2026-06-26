@@ -17,7 +17,7 @@ export default function Results() {
   const [topN, setTopN] = useState(2);
   const [decayFactor, setDecayFactor] = useState(1.8);
   const [showAllInfo, setShowAllInfo] = useState(false);
-  const [showKdeOverlay, setShowKdeOverlay] = useState(false);
+  const [showKdeOverlay, setShowKdeOverlay] = useState(true);
   const [selectedInfoOptionId, setSelectedInfoOptionId] = useState(null);
 
   function isDateMonth(str) {
@@ -77,7 +77,7 @@ export default function Results() {
 
   useEffect(() => {
     setShowAllInfo(false);
-    setShowKdeOverlay(false);
+    setShowKdeOverlay(true);
     setSelectedInfoOptionId(null);
   }, [pollId]);
 
