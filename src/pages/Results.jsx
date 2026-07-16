@@ -17,7 +17,6 @@ export default function Results() {
   const [topN, setTopN] = useState(2);
   const [decayFactor, setDecayFactor] = useState(1.8);
   const [showAllInfo, setShowAllInfo] = useState(false);
-  const [showKdeOverlay, setShowKdeOverlay] = useState(true);
   const [selectedInfoOptionId, setSelectedInfoOptionId] = useState(null);
 
   const zeroScoreThreshold = 6;
@@ -83,7 +82,6 @@ export default function Results() {
 
   useEffect(() => {
     setShowAllInfo(false);
-    setShowKdeOverlay(true);
     setSelectedInfoOptionId(null);
   }, [pollId]);
 
@@ -272,7 +270,7 @@ export default function Results() {
     return distributions;
   })();
   const maxPositionFrequency = Math.max(1, ...Object.values(positionDistributions).flat());
-  const kdePalette = ["#a89968", "#8f7aa8", "#6f9a8d", "#c07a64", "#6f87b7", "#b07d9a", "#8a9a5b", "#b58a55"];
+  const kdePalette = ["#e07878", "#e89a5a", "#d4bc50", "#68c280", "#52b8cc", "#6888e0", "#9868d8", "#d868a0"];
   const kdeBandwidth = Math.max(0.55, options.length / 8);
   const kdeSampleCount = Math.max(80, options.length * 18);
   const kdeSeries = options.map((option, optionIndex) => {
@@ -437,8 +435,6 @@ export default function Results() {
             rankingRows={rankingRows}
             showAllInfo={showAllInfo}
             setShowAllInfo={setShowAllInfo}
-            showKdeOverlay={showKdeOverlay}
-            setShowKdeOverlay={setShowKdeOverlay}
             outcomeOrderedOptions={outcomeOrderedOptions}
             infoVisibleOptions={infoVisibleOptions}
             positionDistributions={positionDistributions}

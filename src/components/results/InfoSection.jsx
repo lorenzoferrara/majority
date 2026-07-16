@@ -2,8 +2,6 @@ export default function InfoSection({
   rankingRows,
   showAllInfo,
   setShowAllInfo,
-  showKdeOverlay,
-  setShowKdeOverlay,
   outcomeOrderedOptions,
   infoVisibleOptions,
   positionDistributions,
@@ -30,35 +28,24 @@ export default function InfoSection({
       <div className="flex flex-col gap-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <p className="text-[10px] tracking-[0.18em] uppercase text-pastel-muted">
-            {showAllInfo ? `Showing all ${outcomeOrderedOptions.length} books` : "Focused view: winner, runner-up, top elimination"}
+            {showAllInfo ? `Showing all ${outcomeOrderedOptions.length} books` : "TOP 3 VIEW"}
           </p>
           <button
             type="button"
             onClick={() => setShowAllInfo((prev) => !prev)}
             className="text-[10px] tracking-[0.2em] uppercase text-pastel-mid border border-pastel-border px-2.5 py-1.5 hover:border-pastel-gold hover:text-pastel-gold transition-colors w-fit"
           >
-            {showAllInfo ? "Show Focus" : "Show All"}
+            {showAllInfo ? "Show Top 3" : "Show All"}
           </button>
         </div>
 
         <div className="border border-pastel-border bg-pastel-card px-3 py-3">
           <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2 sm:gap-3 mb-3">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-pastel-mid">KDE by book</p>
-            <div className="flex items-center gap-2">
-              <p className="text-[10px] text-pastel-muted">Smoothed density</p>
-              <button
-                type="button"
-                onClick={() => setShowKdeOverlay((prev) => !prev)}
-                className="text-[10px] tracking-[0.15em] uppercase text-pastel-mid border border-pastel-border px-2 py-1 hover:border-pastel-gold hover:text-pastel-gold transition-colors"
-              >
-                {showKdeOverlay ? "Hide" : "Show"}
-              </button>
-            </div>
+            <p className="text-[10px] text-pastel-muted">Smoothed density</p>
           </div>
 
-          {!showKdeOverlay ? (
-            <p className="text-[11px] text-pastel-muted italic">KDE overlay hidden to reduce visual clutter. Click Show to display it.</p>
-          ) : (() => {
+          {(() => {
             const chartWidth = 320;
             const chartHeight = 190;
             const left = 34;
@@ -125,7 +112,7 @@ export default function InfoSection({
                       onClick={() => setSelectedInfoOptionId((prev) => (prev === series.option.id ? null : series.option.id))}
                       className={`flex items-center gap-1.5 min-w-0 border px-1.5 py-0.5 transition-colors ${selectedInfoOptionId === series.option.id ? "border-pastel-gold bg-amber-50" : "border-pastel-border bg-white hover:border-pastel-gold"}`}
                     >
-                      <span className="w-3 h-0.5 shrink-0" style={{ backgroundColor: series.color }} />
+                      <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: series.color }} />
                       <span className="text-[9px] text-pastel-mid truncate max-w-[9rem]">{series.option.label}</span>
                     </button>
                   ))}
