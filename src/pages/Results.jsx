@@ -13,12 +13,18 @@ export default function Results() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState("irv"); // "irv" | "topN" | "exponential" | "info"
+  const [viewMode, setViewMode] = useState("irv"); // "irv" | "topN" | "exponential" | "pl" | "info"
   const [topN, setTopN] = useState(2);
   const [decayFactor, setDecayFactor] = useState(1.8);
   const [showAllInfo, setShowAllInfo] = useState(false);
   const [showKdeOverlay, setShowKdeOverlay] = useState(true);
   const [selectedInfoOptionId, setSelectedInfoOptionId] = useState(null);
+
+  const zeroScoreThreshold = 6;
+  const normalizingFactor = decayFactor - Math.pow(decayFactor, 2-zeroScoreThreshold);
+  const getExponentialPositionScore = (positionIndex, factor = decayFactor) => (
+    ( Math.pow(factor, 1-positionIndex) - Math.pow(factor, 2-zeroScoreThreshold) ) / 
+    normalizingFactor);
 
   function isDateMonth(str) {
     return /^\d{4}-\d{2}$/.test(str) || str.includes('Demo');
@@ -173,7 +179,7 @@ export default function Results() {
           for (let i = 0; i < ranking.length; i++) {
             const optionId = ranking[i];
             if (scores.hasOwnProperty(optionId)) {
-              scores[optionId] += Math.pow(factor, -i);
+              scores[optionId] += getExponentialPositionScore(i, factor);
             }
           }
         }
@@ -188,6 +194,66 @@ export default function Results() {
   };
 
   const exponentialScores = calculateExponentialScores();
+
+  // Plackett-Luce MLE via Hunter's MM algorithm
+  const calculatePlStrengths = () => {
+    const strengths = {};
+    for (const option of options) {
+      strengths[option.id] = 1.0;
+    }
+    if (rankingRows.length === 0) return strengths;
+
+    const ids = options.map((o) => o.id);
+    const gamma = Object.fromEntries(ids.map((id) => [id, 1.0]));
+    const wins = Object.fromEntries(ids.map((id) => [id, 0]));
+
+    // Count wins (appearances in any ranking)
+    for (const ranking of rankingRows) {
+      for (let i = 0; i < ranking.length - 1; i++) {
+        if (gamma.hasOwnProperty(ranking[i])) wins[ranking[i]]++;
+      }
+    }
+
+    for (let iter = 0; iter < 200; iter++) {
+      const denom = Object.fromEntries(ids.map((id) => [id, 0.0]));
+
+      for (const ranking of rankingRows) {
+        // suffix-sum reciprocal trick: one pass per ranking
+        let suffixSum = 0;
+        for (let k = ranking.length - 1; k >= 0; k--) {
+          const id = ranking[k];
+          if (gamma.hasOwnProperty(id)) suffixSum += gamma[id];
+        }
+        for (let i = 0; i < ranking.length - 1; i++) {
+          const id = ranking[i];
+          if (!gamma.hasOwnProperty(id)) continue;
+          // item i beats all items ranked below it; denominator contribution is 1/suffixSum at position i
+          denom[id] += 1 / suffixSum;
+          if (gamma.hasOwnProperty(ranking[i])) {
+            // remove current item from suffix sum for next step
+            suffixSum -= gamma[ranking[i]];
+          }
+        }
+      }
+
+      let changed = false;
+      for (const id of ids) {
+        const newVal = denom[id] > 0 ? wins[id] / denom[id] : gamma[id];
+        if (Math.abs(newVal - gamma[id]) > 1e-9) changed = true;
+        gamma[id] = newVal;
+      }
+
+      // normalize so max = 1
+      const maxGamma = Math.max(1e-10, ...ids.map((id) => gamma[id]));
+      for (const id of ids) gamma[id] /= maxGamma;
+
+      if (!changed) break;
+    }
+
+    return gamma;
+  };
+
+  const plStrengths = calculatePlStrengths();
   const positionDistributions = (() => {
     const distributions = {};
     for (const option of options) {
@@ -357,11 +423,12 @@ export default function Results() {
           topNCounts={topNCounts}
           topN={topN}
           exponentialScores={exponentialScores}
+          plStrengths={plStrengths}
         />
 
         {/* Vote summary label */}
         <div className="flex items-center justify-between text-[10px] tracking-[0.3em] uppercase text-pastel-muted mb-3">
-          <span>{viewMode === "irv" ? "Elimination round" : viewMode === "exponential" ? "Exponential score" : viewMode === "info" ? "Vote frequency by position" : `Top-${topN} pick appearances`}</span>
+          <span>{viewMode === "irv" ? "Elimination round" : viewMode === "exponential" ? "Exponential score" : viewMode === "pl" ? "Plackett–Luce strength" : viewMode === "info" ? "Vote frequency by position" : `Top-${topN} pick appearances`}</span>
           <span>{totalBallots} voter{totalBallots !== 1 ? "s" : ""}</span>
         </div>
 
@@ -391,6 +458,7 @@ export default function Results() {
             rounds={rounds}
             firstChoiceCounts={firstChoiceCounts}
             exponentialScores={exponentialScores}
+            plStrengths={plStrengths}
             topNCounts={topNCounts}
             totalBallots={totalBallots}
             options={options}
@@ -410,53 +478,78 @@ export default function Results() {
         {viewMode === "exponential" && (
           <div className="mb-8">
             <p className="text-[11px] text-pastel-muted leading-relaxed mb-4">
-              Each voter's choices are scored exponentially with a decay factor of {decayFactor.toFixed(1)}: 1st place gets 1 point, 2nd gets {(1/decayFactor).toFixed(2)} points, 3rd gets {Math.pow(decayFactor, -2).toFixed(2)} points, and so on. The book with the highest total score wins.
+              Each voter's choices are scored exponentially with a decay factor of {decayFactor.toFixed(1)}: 1st place gets {getExponentialPositionScore(0).toFixed(2)} points, 2nd gets {getExponentialPositionScore(1).toFixed(2)} points, 3rd gets {getExponentialPositionScore(2).toFixed(2)} points, and so on. The book with the highest total score wins.
             </p>
             <div className="p-4 bg-pastel-card border border-pastel-border rounded">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-pastel-mid mb-3">Score Decay by Position</p>
-              <svg viewBox="0 0 280 140" className="w-full max-w-sm border border-pastel-border bg-white rounded">
-                {/* Grid lines */}
-                <line x1="30" y1="110" x2="270" y2="110" stroke="#e5e1d8" strokeWidth="1" />
-                {/* Y axis */}
-                <line x1="30" y1="20" x2="30" y2="110" stroke="#8b8380" strokeWidth="1.5" />
-                {/* X axis */}
-                <line x1="30" y1="110" x2="270" y2="110" stroke="#8b8380" strokeWidth="1.5" />
-                
-                {/* Grid background */}
-                {[...Array(5)].map((_, i) => {
-                  const x = 30 + (i + 1) * 48;
-                  return <line key={`vgrid-${i}`} x1={x} y1="20" x2={x} y2="110" stroke="#ede9e2" strokeWidth="0.5" strokeDasharray="2,2" />;
-                })}
-                {[...Array(4)].map((_, i) => {
-                  const y = 110 - (i + 1) * 22.5;
-                  return <line key={`hgrid-${i}`} x1="30" y1={y} x2="270" y2={y} stroke="#ede9e2" strokeWidth="0.5" strokeDasharray="2,2" />;
-                })}
-                
-                {/* Y axis labels */}
-                <text x="25" y="115" fontSize="10" textAnchor="end" fill="#666">0</text>
-                <text x="25" y="27" fontSize="10" textAnchor="end" fill="#666">1</text>
-                
-                {/* Points and line */}
-                {[...Array(6)].map((_, i) => {
-                  const score = Math.pow(decayFactor, -i);
-                  const x = 30 + (i + 1) * 40;
-                  const y = 110 - score * 90;
-                  return (
-                    <g key={`point-${i}`}>
-                      {i < 5 && <line x1={x} y1={y} x2={30 + (i + 2) * 40} y2={110 - Math.pow(decayFactor, -(i + 1)) * 90} stroke="#a89968" strokeWidth="2" />}
-                      <circle cx={x} cy={y} r="3" fill="#a89968" />
-                      <text x={x} y="125" fontSize="9" textAnchor="middle" fill="#666">{i + 1}</text>
-                      <text x={x} y="103" fontSize="8" textAnchor="middle" fill="#999">{score.toFixed(2)}</text>
-                    </g>
-                  );
-                })}
-                
-                {/* Axis labels */}
-                <text x="150" y="138" fontSize="10" textAnchor="middle" fill="#666">Position</text>
-                <text x="8" y="65" fontSize="10" textAnchor="middle" fill="#666" transform="rotate(-90 8 65)">Score</text>
-              </svg>
+              {(() => {
+                const chartLeft = 30;
+                const chartRight = 270;
+                const chartTop = 20;
+                const chartBottom = 110;
+                const pointCount = 10;
+                const scores = Array.from({ length: pointCount }, (_, i) => getExponentialPositionScore(i));
+                const minScore = Math.min(0, ...scores);
+                const maxScore = Math.max(1, ...scores);
+                const scoreRange = Math.max(0.0001, maxScore - minScore);
+                const yForScore = (score) => chartBottom - ((score - minScore) / scoreRange) * (chartBottom - chartTop);
+                const xForIndex = (i) => chartLeft + ((i + 1) / pointCount) * (chartRight - chartLeft);
+                const zeroY = yForScore(0);
+
+                return (
+                  <svg viewBox="0 0 280 140" className="w-full max-w-sm border border-pastel-border bg-white rounded">
+                    <line x1={chartLeft} y1={chartTop} x2={chartLeft} y2={chartBottom} stroke="#8b8380" strokeWidth="1.5" />
+                    <line x1={chartLeft} y1={zeroY} x2={chartRight} y2={zeroY} stroke="#8b8380" strokeWidth="1.5" />
+
+                    {[...Array(5)].map((_, i) => {
+                      const x = chartLeft + ((i + 1) / 5) * (chartRight - chartLeft);
+                      return <line key={`vgrid-${i}`} x1={x} y1={chartTop} x2={x} y2={chartBottom} stroke="#ede9e2" strokeWidth="0.5" strokeDasharray="2,2" />;
+                    })}
+                    {[...Array(4)].map((_, i) => {
+                      const y = chartTop + ((i + 1) / 5) * (chartBottom - chartTop);
+                      return <line key={`hgrid-${i}`} x1={chartLeft} y1={y} x2={chartRight} y2={y} stroke="#ede9e2" strokeWidth="0.5" strokeDasharray="2,2" />;
+                    })}
+
+                    <text x="25" y={chartBottom + 5} fontSize="10" textAnchor="end" fill="#666">{minScore.toFixed(2)}</text>
+                    <text x="25" y={chartTop + 7} fontSize="10" textAnchor="end" fill="#666">{maxScore.toFixed(2)}</text>
+
+                    {scores.map((score, i) => {
+                      const x = xForIndex(i);
+                      const y = yForScore(score);
+                      const scoreLabelY = Math.max(chartTop + 9, Math.min(chartBottom - 4, y - 6));
+
+                      return (
+                        <g key={`point-${i}`}>
+                          {i < scores.length - 1 && (
+                            <line
+                              x1={x}
+                              y1={y}
+                              x2={xForIndex(i + 1)}
+                              y2={yForScore(scores[i + 1])}
+                              stroke="#a89968"
+                              strokeWidth="2"
+                            />
+                          )}
+                          <circle cx={x} cy={y} r="3" fill="#a89968" />
+                          <text x={x} y="125" fontSize="9" textAnchor="middle" fill="#666">{i + 1}</text>
+                          <text x={x} y={scoreLabelY} fontSize="8" textAnchor="middle" fill="#999">{score.toFixed(2)}</text>
+                        </g>
+                      );
+                    })}
+
+                    <text x="150" y="138" fontSize="10" textAnchor="middle" fill="#666">Position</text>
+                    <text x="8" y="65" fontSize="10" textAnchor="middle" fill="#666" transform="rotate(-90 8 65)">Score</text>
+                  </svg>
+                );
+              })()}
             </div>
           </div>
+        )}
+
+        {viewMode === "pl" && (
+          <p className="text-[11px] text-pastel-muted mb-8 leading-relaxed">
+            Each book's hidden strength is estimated from the full ballot order using the Plackett–Luce model. The algorithm finds the strengths that make the observed rankings most probable, treating each position as a weighted draw. Strengths are normalized so the top book scores 1.00.
+          </p>
         )}
 
         {viewMode === "info" && (

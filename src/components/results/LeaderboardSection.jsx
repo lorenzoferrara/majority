@@ -5,6 +5,7 @@ export default function LeaderboardSection({
   rounds,
   firstChoiceCounts,
   exponentialScores,
+  plStrengths,
   topNCounts,
   totalBallots,
   options,
@@ -15,13 +16,17 @@ export default function LeaderboardSection({
     ? (rounds.length > 0 ? rounds[rounds.length - 1].counts : firstChoiceCounts)
     : viewMode === "exponential"
       ? exponentialScores
-      : topNCounts;
+      : viewMode === "pl"
+        ? plStrengths
+        : topNCounts;
 
   const totalForPct = viewMode === "irv"
     ? totalBallots
     : viewMode === "exponential"
       ? Object.values(exponentialScores).reduce((a, b) => a + b, 0)
-      : options.reduce((s, o) => s + (topNCounts[o.id] || 0), 0);
+      : viewMode === "pl"
+        ? Object.values(plStrengths).reduce((a, b) => a + b, 0)
+        : options.reduce((s, o) => s + (topNCounts[o.id] || 0), 0);
 
   let sorted;
   if (viewMode === "irv" && rounds.length > 0) {
@@ -65,7 +70,7 @@ export default function LeaderboardSection({
         const pct = totalForPct > 0 ? Math.round((count / totalForPct) * 100) : 0;
         const rank = ranks[option.id];
         const isTop = rank === 1;
-        let displayText = viewMode === "exponential" ? `${count.toFixed(2)}` : `${count} (${pct}%)`;
+        let displayText = (viewMode === "exponential" || viewMode === "pl") ? `${count.toFixed(3)}` : `${count} (${pct}%)`;
         let barPct = pct;
 
         if (viewMode === "irv" && rounds.length > 0) {

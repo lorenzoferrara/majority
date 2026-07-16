@@ -9,7 +9,7 @@ export default function ViewModeToggle({
 }) {
   return (
     <div className="flex flex-wrap items-start sm:items-center gap-3 sm:gap-4 mb-10">
-      <div className="grid grid-cols-2 sm:flex sm:items-center gap-0.5 sm:gap-1 border border-pastel-border bg-[#f4f0ec] p-0.5 sm:p-1 w-full sm:w-fit">
+      <div className="grid grid-cols-3 sm:flex sm:items-center gap-0.5 sm:gap-1 border border-pastel-border bg-[#f4f0ec] p-0.5 sm:p-1 w-full sm:w-fit">
         <button
           onClick={() => setViewMode("irv")}
           className={`text-[10px] sm:text-[10px] tracking-[0.1em] sm:tracking-[0.3em] uppercase px-2 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "irv" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
@@ -26,7 +26,13 @@ export default function ViewModeToggle({
           onClick={() => setViewMode("exponential")}
           className={`text-[10px] sm:text-[10px] tracking-[0.1em] sm:tracking-[0.3em] uppercase px-2 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "exponential" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
         >
-          EXPONENTIAL
+          EXP
+        </button>
+        <button
+          onClick={() => setViewMode("pl")}
+          className={`text-[10px] sm:text-[10px] tracking-[0.1em] sm:tracking-[0.3em] uppercase px-2 sm:px-4 py-1 sm:py-1.5 font-semibold transition-colors whitespace-nowrap ${viewMode === "pl" ? "bg-pastel-card text-pastel-ink shadow-sm" : "text-pastel-muted hover:text-pastel-mid"}`}
+        >
+          PL
         </button>
         <button
           onClick={() => setViewMode("info")}
