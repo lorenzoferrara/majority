@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 export function useSignIn() {
   const [name, setName] = useState("");
-  const [passphrase, setPassphrase] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +30,7 @@ export function useSignIn() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ name: name.trim(), passphrase }),
+        body: JSON.stringify({ name: name.trim() }),
       });
 
       const contentType = res.headers.get("content-type") || "";
@@ -56,8 +55,6 @@ export function useSignIn() {
   return {
     name,
     setName,
-    passphrase,
-    setPassphrase,
     error,
     loading,
     handleSubmit,

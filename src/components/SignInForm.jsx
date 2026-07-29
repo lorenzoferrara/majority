@@ -1,8 +1,6 @@
 export default function SignInForm({
   name,
   setName,
-  passphrase,
-  setPassphrase,
   error,
   loading,
   handleSubmit,
@@ -19,20 +17,6 @@ export default function SignInForm({
           placeholder="e.g. Gianfranca"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full bg-transparent border-b border-pastel-border pb-2 sm:pb-2.5 text-base text-pastel-ink placeholder-pastel-muted focus:outline-none focus:border-pastel-gold transition-colors duration-200"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block text-[11px] tracking-[0.4em] uppercase text-pastel-mid mb-2 sm:mb-3">
-          Passphrase
-        </label>
-        <input
-          type="password"
-          placeholder="••••••••"
-          value={passphrase}
-          onChange={(e) => setPassphrase(e.target.value)}
           className="w-full bg-transparent border-b border-pastel-border pb-2 sm:pb-2.5 text-base text-pastel-ink placeholder-pastel-muted focus:outline-none focus:border-pastel-gold transition-colors duration-200"
           required
         />

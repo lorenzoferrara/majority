@@ -5,8 +5,6 @@ export default function SignIn() {
   const {
     name,
     setName,
-    passphrase,
-    setPassphrase,
     error,
     loading,
     handleSubmit,
@@ -59,14 +57,12 @@ export default function SignIn() {
             <div className="border-4 border-pastel-ink/40 bg-white px-4 sm:px-7 py-5 sm:py-8 relative shadow-[4px_4px_0_0_rgba(92,32,0,0.15)]">
               <div className="hidden md:block mb-8">
                 <h2 className="font-display text-4xl sm:text-5xl font-light text-pastel-ink leading-none mb-3">Enter</h2>
-                <p className="text-sm tracking-wide text-pastel-mid">Members only - sign in to vote.</p>
+                <p className="text-sm tracking-wide text-pastel-mid">Enter your name to vote.</p>
               </div>
 
               <SignInForm
                 name={name}
                 setName={setName}
-                passphrase={passphrase}
-                setPassphrase={setPassphrase}
                 error={error}
                 loading={loading}
                 handleSubmit={handleSubmit}

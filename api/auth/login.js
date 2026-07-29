@@ -1,4 +1,4 @@
-const { getPassphrase, setSessionCookie } = require("../../lib/auth");
+const { setSessionCookie } = require("../../lib/auth");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -6,14 +6,9 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { name, passphrase } = req.body ?? {};
-  if (!name?.trim() || !passphrase) {
-    return res.status(400).json({ error: "Name and passphrase are required" });
-  }
-
-  const expectedPassphrase = getPassphrase();
-  if (!expectedPassphrase || passphrase !== expectedPassphrase) {
-    return res.status(401).json({ error: "Wrong passphrase" });
+  const { name } = req.body ?? {};
+  if (!name?.trim()) {
+    return res.status(400).json({ error: "Name is required" });
   }
 
   const user = { name: name.trim() };
