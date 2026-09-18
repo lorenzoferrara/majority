@@ -13,7 +13,7 @@ export default function Results() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewMode, setViewMode] = useState("irv"); // "irv" | "topN" | "exponential" | "pl" | "info"
+  const [viewMode, setViewMode] = useState("irv"); // "irv" | "topN" | "exponential" | "info"
   const [topN, setTopN] = useState(2);
   const [decayFactor, setDecayFactor] = useState(1.8);
   const [showAllInfo, setShowAllInfo] = useState(false);
@@ -193,65 +193,6 @@ export default function Results() {
 
   const exponentialScores = calculateExponentialScores();
 
-  // Plackett-Luce MLE via Hunter's MM algorithm
-  const calculatePlStrengths = () => {
-    const strengths = {};
-    for (const option of options) {
-      strengths[option.id] = 1.0;
-    }
-    if (rankingRows.length === 0) return strengths;
-
-    const ids = options.map((o) => o.id);
-    const gamma = Object.fromEntries(ids.map((id) => [id, 1.0]));
-    const wins = Object.fromEntries(ids.map((id) => [id, 0]));
-
-    // Count wins (appearances in any ranking)
-    for (const ranking of rankingRows) {
-      for (let i = 0; i < ranking.length - 1; i++) {
-        if (gamma.hasOwnProperty(ranking[i])) wins[ranking[i]]++;
-      }
-    }
-
-    for (let iter = 0; iter < 200; iter++) {
-      const denom = Object.fromEntries(ids.map((id) => [id, 0.0]));
-
-      for (const ranking of rankingRows) {
-        // suffix-sum reciprocal trick: one pass per ranking
-        let suffixSum = 0;
-        for (let k = ranking.length - 1; k >= 0; k--) {
-          const id = ranking[k];
-          if (gamma.hasOwnProperty(id)) suffixSum += gamma[id];
-        }
-        for (let i = 0; i < ranking.length - 1; i++) {
-          const id = ranking[i];
-          if (!gamma.hasOwnProperty(id)) continue;
-          // item i beats all items ranked below it; denominator contribution is 1/suffixSum at position i
-          denom[id] += 1 / suffixSum;
-          if (gamma.hasOwnProperty(ranking[i])) {
-            // remove current item from suffix sum for next step
-            suffixSum -= gamma[ranking[i]];
-          }
-        }
-      }
-
-      let changed = false;
-      for (const id of ids) {
-        const newVal = denom[id] > 0 ? wins[id] / denom[id] : gamma[id];
-        if (Math.abs(newVal - gamma[id]) > 1e-9) changed = true;
-        gamma[id] = newVal;
-      }
-
-      // normalize so max = 1
-      const maxGamma = Math.max(1e-10, ...ids.map((id) => gamma[id]));
-      for (const id of ids) gamma[id] /= maxGamma;
-
-      if (!changed) break;
-    }
-
-    return gamma;
-  };
-
-  const plStrengths = calculatePlStrengths();
   const positionDistributions = (() => {
     const distributions = {};
     for (const option of options) {
@@ -421,12 +362,11 @@ export default function Results() {
           topNCounts={topNCounts}
           topN={topN}
           exponentialScores={exponentialScores}
-          plStrengths={plStrengths}
         />
 
         {/* Vote summary label */}
         <div className="flex items-center justify-between text-[10px] tracking-[0.3em] uppercase text-pastel-muted mb-3">
-          <span>{viewMode === "irv" ? "Elimination round" : viewMode === "exponential" ? "Exponential score" : viewMode === "pl" ? "Plackett–Luce strength" : viewMode === "info" ? "Vote frequency by position" : `Top-${topN} pick appearances`}</span>
+          <span>{viewMode === "irv" ? "Elimination round" : viewMode === "exponential" ? "Exponential score" : viewMode === "info" ? "Vote frequency by position" : `Top-${topN} pick appearances`}</span>
           <span>{totalBallots} voter{totalBallots !== 1 ? "s" : ""}</span>
         </div>
 
@@ -454,7 +394,6 @@ export default function Results() {
             rounds={rounds}
             firstChoiceCounts={firstChoiceCounts}
             exponentialScores={exponentialScores}
-            plStrengths={plStrengths}
             topNCounts={topNCounts}
             totalBallots={totalBallots}
             options={options}
@@ -540,12 +479,6 @@ export default function Results() {
               })()}
             </div>
           </div>
-        )}
-
-        {viewMode === "pl" && (
-          <p className="text-[11px] text-pastel-muted mb-8 leading-relaxed">
-            Each book's hidden strength is estimated from the full ballot order using the Plackett–Luce model. The algorithm finds the strengths that make the observed rankings most probable, treating each position as a weighted draw. Strengths are normalized so the top book scores 1.00.
-          </p>
         )}
 
         {viewMode === "info" && (

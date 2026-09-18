@@ -8,7 +8,6 @@ export default function WinnerSection({
   topNCounts,
   topN,
   exponentialScores,
-  plStrengths,
 }) {
   if (pollStatus !== "CLOSED") {
     return (
@@ -78,30 +77,6 @@ export default function WinnerSection({
           <>
             <p className="text-[11px] tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Co-winners</p>
             {expWinners.map((w) => (
-              <p key={w.id} className="font-display text-3xl font-bold text-pastel-ink">{w.label}</p>
-            ))}
-          </>
-        ) : (
-          <p className="font-display text-xl italic text-pastel-muted">No winner determined.</p>
-        )}
-      </div>
-    );
-  }
-
-  if (viewMode === "pl") {
-    const maxStrength = Math.max(0, ...options.map((o) => plStrengths[o.id] || 0));
-    const plWinners = options.filter((o) => Math.abs((plStrengths[o.id] || 0) - maxStrength) < 0.0001 && maxStrength > 0);
-    return (
-      <div className="mb-10 border-l-4 border-pastel-gold pl-5 py-1">
-        {plWinners.length === 1 ? (
-          <>
-            <p className="text-[11px] tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Winner</p>
-            <p className="font-display text-3xl font-bold text-pastel-ink">{plWinners[0].label}</p>
-          </>
-        ) : plWinners.length > 1 ? (
-          <>
-            <p className="text-[11px] tracking-[0.4em] uppercase text-pastel-gold font-semibold mb-1">Co-winners</p>
-            {plWinners.map((w) => (
               <p key={w.id} className="font-display text-3xl font-bold text-pastel-ink">{w.label}</p>
             ))}
           </>
